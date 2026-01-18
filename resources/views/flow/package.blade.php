@@ -35,25 +35,37 @@
     @endif
     <div id="packageNotice" class="flow-notice" role="status" aria-live="polite" hidden></div>
 
-    <h1>Pilih Paket</h1>
-    <p>Silakan pilih paket yang sesuai kebutuhan Anda.</p>
+    <h1 style="background: linear-gradient(135deg, #fff 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 36px; margin-bottom: 8px;">PILIH PAKET</h1>
+    <p style="font-size: 16px; margin-bottom: 20px;">Silakan pilih paket yang sesuai kebutuhan Anda.</p>
     <form action="{{ route('flow.package.choose') }}" method="post">
       @csrf
       <div class="packages">
-        <label class="package">
+        <label class="package package-selectable" data-package="a6">
+          <div class="package-badge package-badge-recommended">RECOMMENDED</div>
+          <div class="package-check"><i class="fas fa-check-circle"></i></div>
           <h3>A6 (Default)</h3>
           <div class="price">Rp 30.000</div>
           <div class="note">Ukuran standar</div>
-          <input id="packageA6" type="radio" name="package" value="30000" checked style="margin-top:8px;">
+          <div class="package-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Pilih</span>
+          </div>
+          <input id="packageA6" type="radio" name="package" value="30000" checked style="display:none;">
         </label>
-        <label class="package">
+        <label class="package package-selectable package-disabled" data-package="a3">
+          <div class="package-badge package-badge-soon">COMING SOON</div>
+          <div class="package-check"><i class="fas fa-check-circle"></i></div>
           <h3>A3</h3>
           <div class="price">Rp 40.000</div>
-          <div class="note">Ukuran A3, lebih besar • <strong>Coming Soon</strong></div>
-          <input id="packageA3" type="radio" name="package" value="40000" style="margin-top:8px;">
+          <div class="note">Ukuran A3, lebih besar</div>
+          <div class="package-cta">
+            <i class="fas fa-clock"></i>
+            <span>Segera Hadir</span>
+          </div>
+          <input id="packageA3" type="radio" name="package" value="40000" style="display:none;">
         </label>
       </div>
-      <button type="submit" class="btn primary" style="margin-top:16px;">Lanjut ke Pembayaran</button>
+      <button type="submit" class="btn primary" style="margin-top:24px; font-size: 18px; padding: 14px 32px;">Lanjut ke Pembayaran</button>
     </form>
   </div>
 </section>
@@ -63,6 +75,7 @@
     var radioA6 = document.getElementById('packageA6');
     var radioA3 = document.getElementById('packageA3');
     var notice = document.getElementById('packageNotice');
+    var packages = document.querySelectorAll('.package-selectable');
     var hideTimer = null;
 
     if (!radioA6 || !radioA3 || !notice) return;
@@ -76,12 +89,42 @@
       }, 2600);
     }
 
-    radioA3.addEventListener('change', function () {
+    function updateSelection() {
+      packages.forEach(function(pkg) {
+        var pkgType = pkg.getAttribute('data-package');
+        if (pkgType === 'a6' && radioA6.checked) {
+          pkg.classList.add('package-selected');
+        } else if (pkgType === 'a3' && radioA3.checked) {
+          pkg.classList.add('package-selected');
+        } else {
+          pkg.classList.remove('package-selected');
+        }
+      });
+    }
+
+    packages.forEach(function(pkg) {
+      pkg.addEventListener('click', function(e) {
+        var pkgType = pkg.getAttribute('data-package');
+        if (pkgType === 'a3') {
+          e.preventDefault();
+          showNotice('Paket A3 masih Coming Soon. Untuk sekarang silakan pilih A6 dulu ya.');
+          radioA6.checked = true;
+          updateSelection();
+        }
+      });
+    });
+
+    radioA6.addEventListener('change', updateSelection);
+    radioA3.addEventListener('change', function() {
       if (radioA3.checked) {
         showNotice('Paket A3 masih Coming Soon. Untuk sekarang silakan pilih A6 dulu ya.');
         radioA6.checked = true;
+        updateSelection();
       }
     });
+
+    // Initial selection state
+    updateSelection();
   });
 </script>
 @endsection
