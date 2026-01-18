@@ -7,7 +7,8 @@ use App\Http\Requests\StoreCodeRequest;
 use App\Http\Requests\UpdateCodeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-
+use App\Models\AppSetting;
+use DB;
 class CodeController extends Controller
 {
     /**
@@ -33,10 +34,17 @@ class CodeController extends Controller
     {
 
         // deteksi code apakah tersedia dalam database atau tidak
-        $code = Code::where('code', $request->code)->first();
+        // $code = Code::where('code', 'LIKE', $request->code)->first();
+        $code = Code::whereRaw('BINARY `code` = ?', [$request->code])->first();
         if($code && $code->status == 'ready') {
             // simpan data code ke session
             Session::put('code', $code->code);
+
+            // Start global flow timer (max 8 minutes until print)
+            $mins = (int) (AppSetting::getString('tempcollage.flow_timeout_minutes', '8') ?: '8');
+            $mins = max(1, min(60, $mins));
+            Session::put('pb_flow_started_at', now()->timestamp);
+            Session::put('pb_flow_deadline', now()->addMinutes($mins)->timestamp);
 
             // redirect ke halaman pemilihan template
             return redirect()->route('tempcollage.index');
@@ -44,8 +52,8 @@ class CodeController extends Controller
         }else{
 
             // redirect ke halaman input code redeem
-            return redirect()->route('redeem.index');
-            
+            return redirect()->route('redeem.index')->with('message', "Kode yang anda inputkan salah!" );
+
         }
 
     }
@@ -79,6 +87,6 @@ class CodeController extends Controller
      */
     public function destroy(Code $code)
     {
-       
+
     }
 }

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en" class=" kiosk-fullscreen ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photochika</title>
+  <meta name="theme-color" content="#6777ef">
+  <link rel="apple-touch-icon" href="http://127.0.0.1:8000/logo.png">
+  <link rel="manifest" href="http://127.0.0.1:8000/manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+      <link rel="stylesheet" href="http://127.0.0.1:8000/vendor/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="http://127.0.0.1:8000/css/style.css">
+        <style>
+      .pb-progress-stepper {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      }
+      .pb-progress-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .pb-progress-step-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.08);
+        border: 2px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.4);
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+      .pb-progress-step.is-active .pb-progress-step-icon {
+        background: linear-gradient(135deg, rgba(249,115,22,0.95), rgba(234,88,12,0.95));
+        border-color: rgba(249,115,22,0.95);
+        color: #fff;
+        box-shadow: 0 0 16px rgba(249,115,22,0.5);
+      }
+      .pb-progress-step.is-done .pb-progress-step-icon {
+        background: rgba(34,197,94,0.9);
+        border-color: rgba(34,197,94,0.95);
+        color: #fff;
+      }
+      .pb-progress-step-label {
+        color: rgba(255,255,255,0.5);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        display: none;
+      }
+      .pb-progress-step.is-active .pb-progress-step-label {
+        color: rgba(255,255,255,0.95);
+        font-weight: 600;
+        display: inline;
+      }
+      .pb-progress-step.is-done .pb-progress-step-label {
+        color: rgba(255,255,255,0.65);
+      }
+      .pb-progress-divider {
+        width: 16px;
+        height: 2px;
+        background: rgba(255,255,255,0.15);
+        transition: all 0.3s ease;
+      }
+      .pb-progress-step.is-done ~ .pb-progress-divider {
+        background: rgba(34,197,94,0.5);
+      }
+      .pb-progress-step.is-active ~ .pb-progress-divider {
+        background: rgba(249,115,22,0.4);
+      }
+      @media (min-width: 769px) {
+        .pb-progress-stepper { 
+          padding: 10px 18px; 
+          gap: 6px;
+        }
+        .pb-progress-step-icon { 
+          width: 34px; 
+          height: 34px; 
+          font-size: 15px; 
+        }
+        .pb-progress-step-label { 
+          display: inline;
+          font-size: 12px; 
+        }
+        .pb-progress-divider { 
+          width: 20px; 
+        }
+      }
+      @media (max-width: 480px) {
+        .pb-progress-stepper { 
+          padding: 6px 12px; 
+          gap: 3px;
+          top: 8px;
+        }
+        .pb-progress-step-icon { 
+          width: 28px; 
+          height: 28px; 
+          font-size: 12px; 
+        }
+        .pb-progress-divider { 
+          width: 12px; 
+        }
+      }
+    </style>
+        <link rel="preload" as="image" href="/img/logostart.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/img/logosetelahstart.jpg">
+    <link rel="preload" as="image" href="/img/bgpembayaran.jpg">
+    <link rel="preload" as="image" href="/img/bgsukses.jpg">
+    <link rel="preload" as="image" href="/img/redeemcode.jpg">
+    <link rel="preload" as="image" href="/img/pilihanlayout.jpg">
+    <link rel="preload" as="image" href="/img/bgkamera.png">
+  
+  </head>
+<body class=" kiosk-fullscreen ">
+  
+          <div class="pb-progress-stepper" aria-label="Progress">
+      <div class="pb-progress-step is-active ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-th-large"></i>
+        </div>
+        <div class="pb-progress-step-label">Layout</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step  ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-camera"></i>
+        </div>
+        <div class="pb-progress-step-label">Foto</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step  ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-image"></i>
+        </div>
+        <div class="pb-progress-step-label">Frame</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-print"></i>
+        </div>
+        <div class="pb-progress-step-label">Print</div>
+      </div>
+    </div>
+  
+      <style>
+      .pb-flow-timer { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 18px; background: rgba(0,0,0,0.62); border: 1px solid rgba(255,255,255,0.24); color: #fff; font-family: 'Poppins', sans-serif; font-size: 18px; line-height: 1; box-shadow: 0 12px 34px rgba(0,0,0,0.42); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .pb-flow-timer .label { opacity: 0.95; font-weight: 600; }
+      .pb-flow-timer .time { font-weight: 900; letter-spacing: 1px; min-width: 78px; text-align: right; font-size: 22px; }
+      .pb-flow-timer.is-danger { background: rgba(220, 38, 38, 0.72); border-color: rgba(255,255,255,0.32); }
+      @media (max-width: 520px) {
+        .pb-flow-timer { top: 10px; right: 10px; padding: 12px 14px; font-size: 16px; }
+        .pb-flow-timer .time { font-size: 20px; min-width: 72px; }
+      }
+    </style>
+    <div class="pb-flow-timer" id="pb-flow-timer" data-deadline="1768705185" aria-label="Sisa waktu sesi">
+      <span class="label">Sisa waktu</span>
+      <span class="time" id="pb-flow-countdown">08:00</span>
+    </div>
+    <script>
+      (function(){
+        try {
+          var el = document.getElementById('pb-flow-timer');
+          if (!el) return;
+          var deadline = parseInt(el.getAttribute('data-deadline') || '0', 10) * 1000;
+          if (!deadline) return;
+
+          var out = document.getElementById('pb-flow-countdown');
+          var timeoutUrl = "http://127.0.0.1:8000/timeout";
+          var redirected = false;
+          var intervalId = null;
+
+          function pad2(n){ return (n < 10 ? '0' : '') + n; }
+          function tick(){
+            var msLeft = deadline - Date.now();
+            var secLeft = Math.max(0, Math.floor(msLeft / 1000));
+            var m = Math.floor(secLeft / 60);
+            var s = secLeft % 60;
+            if (out) out.textContent = pad2(m) + ':' + pad2(s);
+
+            if (secLeft <= 30) el.classList.add('is-danger');
+            if (secLeft <= 0) {
+              if (redirected) return;
+              redirected = true;
+              try { if (intervalId) clearInterval(intervalId); } catch (e) {}
+              // replace() avoids bouncing back, and cache-busting avoids any weird reload behavior
+              window.location.replace(timeoutUrl + '?ts=' + Date.now());
+              return;
+            }
+          }
+
+          tick();
+          intervalId = setInterval(tick, 250);
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
+  
+  <section class="flow-container flow-themed" style="--flow-bg-image: url('/storage/backgrounds/global/eGKFBPcNejXm1CYzikmw7Y9jvMO7xPjVp81lhNDw.png');">
+  
+  <div class="coffee-rain" aria-hidden="true">
+          <span class="coffee-drop" style="--left: 6%; --delay: 0s; --dur: 7.8s; --size: 18px; --op: 0.22;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 14%; --delay: -2s; --dur: 9.2s; --size: 22px; --op: 0.28;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 22%; --delay: -5s; --dur: 8.6s; --size: 20px; --op: 0.20;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 30%; --delay: -1s; --dur: 10.4s; --size: 26px; --op: 0.18;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 38%; --delay: -3.5s; --dur: 8.9s; --size: 19px; --op: 0.24;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 46%; --delay: -6s; --dur: 11.0s; --size: 28px; --op: 0.16;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 54%; --delay: -2.8s; --dur: 9.6s; --size: 21px; --op: 0.21;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 62%; --delay: -4.2s; --dur: 8.2s; --size: 18px; --op: 0.26;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 70%; --delay: -1.8s; --dur: 10.8s; --size: 24px; --op: 0.17;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 78%; --delay: -5.4s; --dur: 9.0s; --size: 20px; --op: 0.23;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 86%; --delay: -3.2s; --dur: 12.0s; --size: 30px; --op: 0.15;">
+        <i class="fas fa-coffee"></i>
+      </span>
+          <span class="coffee-drop" style="--left: 94%; --delay: -6.6s; --dur: 8.4s; --size: 19px; --op: 0.25;">
+        <i class="fas fa-coffee"></i>
+      </span>
+      </div>
+
+  <div class="card">
+    <h1>Pilih Layout</h1>
+    <p>Pilih layout foto yang kamu mau. Setting ini akan dipakai sampai cetak.</p>
+
+    
+    
+    
+    <form id="pbLayoutForm1" action="http://127.0.0.1:8000/tempcollage/layout" method="post" style="display:none;">
+      <input type="hidden" name="_token" value="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL" autocomplete="off">      <input type="hidden" name="layout" value="1" />
+    </form>
+    <form id="pbLayoutForm2" action="http://127.0.0.1:8000/tempcollage/layout" method="post" style="display:none;">
+      <input type="hidden" name="_token" value="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL" autocomplete="off">      <input type="hidden" name="layout" value="2" />
+      <input type="hidden" name="count" value="2" />
+    </form>
+    <form id="pbLayoutForm2x2" action="http://127.0.0.1:8000/tempcollage/layout" method="post" style="display:none;">
+      <input type="hidden" name="_token" value="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL" autocomplete="off">      <input type="hidden" name="layout" value="2" />
+      <input type="hidden" name="count" value="4" />
+    </form>
+    <form id="pbLayoutForm3" action="http://127.0.0.1:8000/tempcollage/layout" method="post" style="display:none;">
+      <input type="hidden" name="_token" value="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL" autocomplete="off">      <input type="hidden" name="layout" value="3" />
+    </form>
+    <form id="pbLayoutForm4" action="http://127.0.0.1:8000/tempcollage/layout" method="post" style="display:none;">
+      <input type="hidden" name="_token" value="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL" autocomplete="off">      <input type="hidden" name="layout" value="4" />
+    </form>
+
+    <div class="layout-grid">
+        <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm1" data-layout="1" data-enabled="0">
+          <div class="layout-preview layout-1">
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout1/dozYo7q7Ys7P54it1ontaJz3QWCHLHQlnY01oSma.png'); --layout-pos: 50% 35%;"></span>
+          </div>
+          <div class="layout-title">Layout 1</div>
+          <div class="layout-sub">1 foto</div>
+                      <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout1" title="Preview Frames">
+              <i class="fas fa-eye"></i> Preview Frames (3)
+            </button>
+                  </div>
+
+        <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm2" data-layout="2" data-count="2" data-enabled="1">
+          <div class="layout-preview layout-2">
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 30% 35%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 70% 35%;"></span>
+          </div>
+          <div class="layout-title">Layout 2</div>
+          <div class="layout-sub">2 foto</div>
+                      <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout2" title="Preview Frames">
+              <i class="fas fa-eye"></i> Preview Frames (6)
+            </button>
+                  </div>
+
+        <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm2x2" data-layout="2" data-count="4" data-enabled="1">
+          <div class="layout-preview layout-4">
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 30% 30%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 70% 30%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 30% 70%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout2/4qcRkoKhQgsIAZTBJxD6O8YBUbSjDJLVe9CEJcPo.png'); --layout-pos: 70% 70%;"></span>
+          </div>
+          <div class="layout-title">Layout 2 (2×2)</div>
+          <div class="layout-sub">4 foto • 2×2</div>
+                      <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout2" title="Preview Frames">
+              <i class="fas fa-eye"></i> Preview Frames (6)
+            </button>
+                  </div>
+
+        <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm3" data-layout="3" data-enabled="1">
+          <div class="layout-preview layout-3">
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout3/pp5Qv0NYHGKwPhRgTeFicePRytMjs8sy1fWu159V.png'); --layout-pos: 50% 18%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout3/pp5Qv0NYHGKwPhRgTeFicePRytMjs8sy1fWu159V.png'); --layout-pos: 50% 36%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout3/pp5Qv0NYHGKwPhRgTeFicePRytMjs8sy1fWu159V.png'); --layout-pos: 50% 54%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout3/pp5Qv0NYHGKwPhRgTeFicePRytMjs8sy1fWu159V.png'); --layout-pos: 50% 72%;"></span>
+          </div>
+          <div class="layout-title">Layout 3</div>
+          <div class="layout-sub">3 x 2 foto • vertikal 6 Foto</div>
+                      <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout3" title="Preview Frames">
+              <i class="fas fa-eye"></i> Preview Frames (15)
+            </button>
+                  </div>
+
+        <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm4" data-layout="4" data-enabled="0">
+          <div class="layout-preview layout-4">
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 30% 22%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 70% 22%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 30% 50%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 70% 50%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 30% 78%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('/storage/backgrounds/pages/tempcollage_thumb_layout4/5QcxFxmwqNzpp4h2qoMZ4MtqthYIWWoyLEU7nmLz.png'); --layout-pos: 70% 78%;"></span>
+          </div>
+          <div class="layout-title">Layout 4</div>
+          <div class="layout-sub">6 foto • 3×2</div>
+                  </div>
+      </div>
+  </div>
+
+  <div id="pb-coming-soon" class="pb-coming-soon" aria-hidden="true" style="display:none;">
+    <div class="pb-coming-soon__card">
+      <div style="font-family: 'Bungee'; font-size: 22px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.7);">COMING SOON</div>
+      <div style="margin-top: 8px; color: rgba(255,255,255,0.92);">Layout ini belum tersedia.</div>
+      <button type="button" class="formbutton" id="pb-coming-soon-close" style="margin-top: 14px; width:auto; padding: 10px 16px;">OK</button>
+    </div>
+  </div>
+
+  
+  <div id="pb-frame-preview" class="pb-frame-preview" aria-hidden="true" style="display:none;">
+    <div class="pb-frame-preview__backdrop"></div>
+    <div class="pb-frame-preview__card">
+      <button type="button" class="pb-frame-preview__close" id="pb-frame-preview-close" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2 id="pb-frame-preview-title" class="pb-frame-preview__title">Frame Preview</h2>
+      <div id="pb-frame-preview-grid" class="pb-frame-preview__grid"></div>
+    </div>
+  </div>
+
+  <script>
+    window.pbFramesData = {"layout1":[{"id":4,"file":"storage\/frames\/layout1\/3-2.png","url":"\/storage\/frames\/layout1\/3-2.png","name":"3.png"},{"id":3,"file":"storage\/frames\/layout1\/3.png","url":"\/storage\/frames\/layout1\/3.png","name":"3.png"},{"id":2,"file":"storage\/frames\/layout1\/eef89098-7457-4c0e-8732-5481086d33e4.png","url":"\/storage\/frames\/layout1\/eef89098-7457-4c0e-8732-5481086d33e4.png","name":"3.png"}],"layout2":[{"id":53,"file":"storage\/frames\/layout2\/3bc836ec-f19f-4d0a-8326-69139fb3d8fb.png","url":"\/storage\/frames\/layout2\/3bc836ec-f19f-4d0a-8326-69139fb3d8fb.png","name":"Teks paragraf Anda(32).png"},{"id":39,"file":"storage\/frames\/layout2\/9223f0d8-c40c-4c3d-a6cc-49e116b792d0.png","url":"\/storage\/frames\/layout2\/9223f0d8-c40c-4c3d-a6cc-49e116b792d0.png","name":"Teks paragraf Anda(17).png"},{"id":35,"file":"storage\/frames\/layout2\/7e206ea1-7e1d-475f-b278-2e4f9aa10a2c.png","url":"\/storage\/frames\/layout2\/7e206ea1-7e1d-475f-b278-2e4f9aa10a2c.png","name":"Teks paragraf Anda(12).png"},{"id":34,"file":"storage\/frames\/layout2\/a9933457-0826-43d9-a4ad-0b8af8b17c6f.png","url":"\/storage\/frames\/layout2\/a9933457-0826-43d9-a4ad-0b8af8b17c6f.png","name":"Teks paragraf Anda(11).png"},{"id":32,"file":"storage\/frames\/layout2\/eefccc19-7206-4c87-a57c-0b4a97574197.png","url":"\/storage\/frames\/layout2\/eefccc19-7206-4c87-a57c-0b4a97574197.png","name":"Teks paragraf Anda(8).png"},{"id":22,"file":"storage\/frames\/layout2\/42ff058c-de04-4c06-9b25-a1b4bb7f40bc.png","url":"\/storage\/frames\/layout2\/42ff058c-de04-4c06-9b25-a1b4bb7f40bc.png","name":"coffe_10.png"}],"layout3":[{"id":51,"file":"storage\/frames\/layout3\/1991fa35-7f78-44d6-bffe-2612c994038e.png","url":"\/storage\/frames\/layout3\/1991fa35-7f78-44d6-bffe-2612c994038e.png","name":"Teks paragraf Anda(30).png"},{"id":50,"file":"storage\/frames\/layout3\/3e31ce63-443d-4249-ab19-5578833e089f.png","url":"\/storage\/frames\/layout3\/3e31ce63-443d-4249-ab19-5578833e089f.png","name":"Teks paragraf Anda(28).png"},{"id":49,"file":"storage\/frames\/layout3\/3fd210e3-112b-42a6-bbae-9771560769a7.png","url":"\/storage\/frames\/layout3\/3fd210e3-112b-42a6-bbae-9771560769a7.png","name":"Teks paragraf Anda(27).png"},{"id":48,"file":"storage\/frames\/layout3\/0fefaee3-8d51-445f-ad6a-b8a65029f67b.png","url":"\/storage\/frames\/layout3\/0fefaee3-8d51-445f-ad6a-b8a65029f67b.png","name":"Teks paragraf Anda(21).png"},{"id":47,"file":"storage\/frames\/layout3\/b5b8e9fc-b41f-4d88-9fcf-d8f3c8a65429.png","url":"\/storage\/frames\/layout3\/b5b8e9fc-b41f-4d88-9fcf-d8f3c8a65429.png","name":"Teks paragraf Anda(22).png"},{"id":46,"file":"storage\/frames\/layout3\/813e13f6-e1a0-4aab-a6d0-d82ca2aad723.png","url":"\/storage\/frames\/layout3\/813e13f6-e1a0-4aab-a6d0-d82ca2aad723.png","name":"Teks paragraf Anda(23).png"},{"id":43,"file":"storage\/frames\/layout3\/d1d53768-1a65-4809-8e51-1f646e29b313.png","url":"\/storage\/frames\/layout3\/d1d53768-1a65-4809-8e51-1f646e29b313.png","name":"Teks paragraf Anda(20).png"},{"id":42,"file":"storage\/frames\/layout3\/02cd5459-053d-4b38-8f42-2e25341951b8.png","url":"\/storage\/frames\/layout3\/02cd5459-053d-4b38-8f42-2e25341951b8.png","name":"Teks paragraf Anda(19).png"},{"id":33,"file":"storage\/frames\/layout3\/725c8f4d-c967-4fc1-87b2-861bc10c4258.png","url":"\/storage\/frames\/layout3\/725c8f4d-c967-4fc1-87b2-861bc10c4258.png","name":"Teks paragraf Anda(9).png"},{"id":31,"file":"storage\/frames\/layout3\/93f11cd0-ce3d-40fe-819b-ab9172ea2a66.png","url":"\/storage\/frames\/layout3\/93f11cd0-ce3d-40fe-819b-ab9172ea2a66.png","name":"Teks paragraf Anda(7).png"},{"id":30,"file":"storage\/frames\/layout3\/e5468dbf-fdc7-4603-bc5d-49c5ce88e928.png","url":"\/storage\/frames\/layout3\/e5468dbf-fdc7-4603-bc5d-49c5ce88e928.png","name":"Teks paragraf Anda(6).png"},{"id":29,"file":"storage\/frames\/layout3\/ae097c9e-7a6c-4740-9944-daa6e8b7f74e.png","url":"\/storage\/frames\/layout3\/ae097c9e-7a6c-4740-9944-daa6e8b7f74e.png","name":"Teks paragraf Anda(5).png"},{"id":28,"file":"storage\/frames\/layout3\/f79e0bb0-d0f8-4230-a8b4-20472613d236.png","url":"\/storage\/frames\/layout3\/f79e0bb0-d0f8-4230-a8b4-20472613d236.png","name":"Teks paragraf Anda(4).png"},{"id":25,"file":"storage\/frames\/layout3\/75a7e35d-e735-47c1-b2bf-27d4c58aa039.png","url":"\/storage\/frames\/layout3\/75a7e35d-e735-47c1-b2bf-27d4c58aa039.png","name":"Teks paragraf Anda(1).png"},{"id":13,"file":"storage\/frames\/layout3\/dcebef0f-2538-46e8-82d9-0269dfa69c7a.png","url":"\/storage\/frames\/layout3\/dcebef0f-2538-46e8-82d9-0269dfa69c7a.png","name":"coffe_9.png"}],"layout4":[]};
+  </script>
+
+  <script>
+    (function () {
+      const modal = document.getElementById('pb-coming-soon');
+      const closeBtn = document.getElementById('pb-coming-soon-close');
+      function openModal() {
+        if (!modal) return;
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+      }
+      function closeModal() {
+        if (!modal) return;
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+      }
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (modal) modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.querySelectorAll('.js-layout-option').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const enabled = String(btn.getAttribute('data-enabled') || '1') === '1';
+          if (enabled) return;
+          e.preventDefault();
+          e.stopPropagation();
+          openModal();
+        });
+      });
+
+      // Submit the associated hidden form when clicking an enabled layout card.
+      function submitLayoutCard(card) {
+        const enabled = String(card.getAttribute('data-enabled') || '1') === '1';
+        if (!enabled) {
+          openModal();
+          return;
+        }
+        const formId = String(card.getAttribute('data-form') || '');
+        const form = formId ? document.getElementById(formId) : null;
+        if (form && typeof form.submit === 'function') form.submit();
+      }
+
+      document.querySelectorAll('.js-layout-option').forEach((card) => {
+        card.addEventListener('click', (e) => {
+          // allow preview button clicks to work
+          if (e.target && (e.target.closest && e.target.closest('.js-preview-frames'))) return;
+          e.preventDefault();
+          e.stopPropagation();
+          submitLayoutCard(card);
+        }, { passive: false });
+
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            submitLayoutCard(card);
+          }
+        });
+      });
+
+      // Frame Preview Modal
+      const previewModal = document.getElementById('pb-frame-preview');
+      const previewCloseBtn = document.getElementById('pb-frame-preview-close');
+      const previewTitle = document.getElementById('pb-frame-preview-title');
+      const previewGrid = document.getElementById('pb-frame-preview-grid');
+      const framesData = window.pbFramesData || {};
+
+      function openPreviewModal(layoutKey) {
+        if (!previewModal || !previewGrid) return;
+        
+        const frames = framesData[layoutKey] || [];
+        const layoutLabels = {
+          'layout1': 'Layout 1',
+          'layout2': 'Layout 2',
+          'layout3': 'Layout 3',
+          'layout4': 'Layout 4'
+        };
+        
+        if (previewTitle) {
+          previewTitle.textContent = 'Preview Frames - ' + (layoutLabels[layoutKey] || layoutKey);
+        }
+
+        if (frames.length === 0) {
+          previewGrid.innerHTML = '<div style="text-align:center; padding:40px; color:rgba(255,255,255,0.8);">Belum ada frame untuk layout ini.</div>';
+        } else {
+          previewGrid.innerHTML = frames.map(frame => `
+            <div class="pb-frame-preview__item">
+              <img src="${frame.url}" alt="${frame.name}" loading="lazy" />
+            </div>
+          `).join('');
+        }
+
+        previewModal.style.display = 'flex';
+        previewModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closePreviewModal() {
+        if (!previewModal) return;
+        previewModal.style.display = 'none';
+        previewModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      if (previewCloseBtn) {
+        previewCloseBtn.addEventListener('click', closePreviewModal);
+      }
+
+      if (previewModal) {
+        previewModal.addEventListener('click', (e) => {
+          if (e.target === previewModal || e.target.classList.contains('pb-frame-preview__backdrop')) {
+            closePreviewModal();
+          }
+        });
+      }
+
+      document.querySelectorAll('.js-preview-frames').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const layoutKey = btn.getAttribute('data-layout');
+          if (layoutKey) {
+            openPreviewModal(layoutKey);
+          }
+        });
+      });
+    })();
+  </script>
+</section>
+  
+      <div class="simple-keyboard" aria-hidden="true"></div>
+    <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
+    <script src="http://127.0.0.1:8000/js/keyboard.js"></script>
+    <script src="http://127.0.0.1:8000/sw.js"></script>
+  <script>  
+    if(!navigator.serviceWorker.controller) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg){
+        console.log('Service worker has been registered for scope: ' + reg.scope);
+      })
+    }
+  </script>
+</body>
+</html>

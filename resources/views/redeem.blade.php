@@ -1,14 +1,113 @@
 @extends('layouts.app')
 @section('content')
-<section class="content">
-  <form action="{{ route('redeem.store') }}" method="post">
-    @csrf
-    <div class="container">
-      <input type="text" name="code" id="" placeholder="Masukkan Code disini ....">
-      <button type="submit">Enter <svg xmlns="http://www.w3.org/2000/svg" width="42" height="43" viewBox="0 0 42 43" fill="none">
-        <path d="M19.32 13.7063L26.67 0.80625C29.855 1.66625 32.6816 3.24292 35.1498 5.53625C37.618 7.82958 39.4114 10.5529 40.53 13.7063H19.32ZM13.4925 19.0813L6.30002 6.18125C8.19001 4.28208 10.3866 2.77708 12.8898 1.66625C15.393 0.555417 18.0964 0 21 0C21.455 0 21.98 0.0272336 22.575 0.0817002C23.17 0.136167 23.7125 0.198517 24.2025 0.26875L13.4925 19.0813ZM0.682523 26.875C0.472523 26.015 0.305923 25.1371 0.182723 24.2413C0.0595233 23.3454 -0.0013764 22.4317 2.35956e-05 21.5C2.35956e-05 18.9558 0.402523 16.555 1.20752 14.2975C2.01252 12.04 3.15002 9.97958 4.62002 8.11625L15.225 26.875H0.682523ZM15.3825 42.1938C12.1975 41.3338 9.36251 39.7571 6.87752 37.4637C4.39252 35.1704 2.59002 32.4471 1.47002 29.2938H22.6275L15.3825 42.1938ZM21 43C20.475 43 19.9409 42.9642 19.3977 42.8925C18.8545 42.8208 18.3386 42.7492 17.85 42.6775L28.5075 23.9188L35.7 36.8188C33.81 38.7179 31.6141 40.2229 29.1123 41.3338C26.6105 42.4446 23.9064 43 21 43ZM37.38 34.8838L26.775 16.125H41.3175C41.5275 16.985 41.6941 17.8629 41.8173 18.7588C41.9405 19.6546 42.0014 20.5683 42 21.5C42 24.0083 41.5716 26.4092 40.7148 28.7025C39.858 30.9958 38.7464 33.0563 37.38 34.8838Z" fill="black"/>
-        </svg></button>
-    </div>
+<section class="flow-container flow-themed redeem-page" style="--flow-bg-image: url('{{ \App\Models\PageBackground::url('redeem.index', 'img/redeemcode.jpg') }}');">
+  @php
+    $coffeeDrops = [
+      ['left' => '6%',  'delay' => '0s',   'dur' => '7.8s', 'size' => '18px', 'op' => '0.22'],
+      ['left' => '14%', 'delay' => '-2s',  'dur' => '9.2s', 'size' => '22px', 'op' => '0.28'],
+      ['left' => '22%', 'delay' => '-5s',  'dur' => '8.6s', 'size' => '20px', 'op' => '0.20'],
+      ['left' => '30%', 'delay' => '-1s',  'dur' => '10.4s','size' => '26px', 'op' => '0.18'],
+      ['left' => '38%', 'delay' => '-3.5s','dur' => '8.9s', 'size' => '19px', 'op' => '0.24'],
+      ['left' => '46%', 'delay' => '-6s',  'dur' => '11.0s','size' => '28px', 'op' => '0.16'],
+      ['left' => '54%', 'delay' => '-2.8s','dur' => '9.6s', 'size' => '21px', 'op' => '0.21'],
+      ['left' => '62%', 'delay' => '-4.2s','dur' => '8.2s', 'size' => '18px', 'op' => '0.26'],
+      ['left' => '70%', 'delay' => '-1.8s','dur' => '10.8s','size' => '24px', 'op' => '0.17'],
+      ['left' => '78%', 'delay' => '-5.4s','dur' => '9.0s', 'size' => '20px', 'op' => '0.23'],
+      ['left' => '86%', 'delay' => '-3.2s','dur' => '12.0s','size' => '30px', 'op' => '0.15'],
+      ['left' => '94%', 'delay' => '-6.6s','dur' => '8.4s', 'size' => '19px', 'op' => '0.25'],
+    ];
+  @endphp
+
+  <div class="coffee-rain" aria-hidden="true">
+    @foreach($coffeeDrops as $d)
+      <span class="coffee-drop" style="--left: {{ $d['left'] }}; --delay: {{ $d['delay'] }}; --dur: {{ $d['dur'] }}; --size: {{ $d['size'] }}; --op: {{ $d['op'] }};">
+        <i class="fas fa-coffee"></i>
+      </span>
+    @endforeach
+  </div>
+
+  <div class="card">
+    @if(session('message'))
+      <div class="flow-notice" role="alert">{{ session('message') }}</div>
+    @endif
+    <div id="redeemNotice" class="flow-notice" role="status" aria-live="polite" hidden></div>
+
+    <h1>Redeem Code</h1>
+    <p>Tap kolom kode lalu tekan <strong>Tempel</strong> untuk memasukkan kode.</p>
+
+    <form action="{{ route('redeem.store') }}" method="post">
+      @csrf
+      <div style="margin-top:12px; display:flex; justify-content:center;">
+        <input
+          type="text"
+          name="code"
+          id="redeemInput"
+          autocomplete="off"
+          spellcheck="false"
+          autocapitalize="characters"
+          inputmode="text"
+          maxlength="5"
+          placeholder="XXXXX"
+          style="width: min(360px, 80vw); height: 56px; font-size: 22px; text-align: center; border-radius: 12px; border: 1px solid rgba(124, 45, 18, 0.14); outline: none;"
+          required
+        />
+      </div>
+
+      <div class="flow-actions">
+        <button type="button" class="btn" id="pasteBtn">Tempel</button>
+        <button type="submit" class="btn primary">Submit</button>
+      </div>
+    </form>
+  </div>
 </section>
-</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('redeemInput');
+    var pasteBtn = document.getElementById('pasteBtn');
+    var notice = document.getElementById('redeemNotice');
+    if (!input || !pasteBtn || !notice) return;
+
+    function showNotice(message) {
+      notice.textContent = message;
+      notice.hidden = false;
+      window.setTimeout(function () { notice.hidden = true; }, 2600);
+    }
+
+    function normalizeCode(text) {
+      return (text || '')
+        .toString()
+        .trim()
+        .replace(/\s+/g, '')
+        .toUpperCase()
+        .slice(0, 5);
+    }
+
+    async function tryPaste() {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        showNotice('Fitur tempel otomatis tidak tersedia di browser ini. Silakan paste manual.');
+        return;
+      }
+      try {
+        var text = await navigator.clipboard.readText();
+        var code = normalizeCode(text);
+        if (!code) {
+          showNotice('Clipboard kosong. Salin kode dulu ya, lalu tekan Tempel.');
+          return;
+        }
+        input.value = code;
+        input.focus();
+      } catch (e) {
+        showNotice('Izin clipboard tidak aktif. Tekan & tahan untuk Paste, atau gunakan keyboard.');
+      }
+    }
+
+    pasteBtn.addEventListener('click', tryPaste);
+
+    // UX touchscreen: tap input -> coba tempel otomatis
+    input.addEventListener('pointerdown', function () {
+      window.setTimeout(tryPaste, 0);
+    });
+  });
+</script>
 @endsection

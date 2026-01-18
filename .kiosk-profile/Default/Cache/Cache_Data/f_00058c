@@ -1,0 +1,1019 @@
+// Print resolution settings
+// A6 = 105mm x 148mm. Use 300 DPI for sharper prints.
+const PRINT_DPI = 300;
+const A6_W_MM = 105;
+const A6_H_MM = 148;
+
+function mmToPx(mm, dpi) {
+    return Math.round((mm / 25.4) * dpi);
+}
+
+function getBasePadding(canvasWidth, canvasHeight) {
+    // Keep margins visually similar to the old 1050×1480 canvas where padding=40.
+    const baseMin = 1050; // previous min dimension
+    const minDim = Math.min(canvasWidth, canvasHeight);
+    return Math.max(20, Math.round(40 * (minDim / baseMin)));
+}
+const rotateMapStorageKey = 'pb_rotate_map_v1';
+
+function normalizeRotateDeg(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    const mod = ((Math.round(n) % 360) + 360) % 360;
+    if (mod === 90 || mod === 180 || mod === 270) return mod;
+    return 0;
+}
+
+function normalizePhotoKey(src) {
+    if (!src) return '';
+    try {
+        const clean = String(src).split('#')[0].split('?')[0];
+        const parts = clean.split('/');
+        const last = parts[parts.length - 1] || clean;
+        return decodeURIComponent(last);
+    } catch (e) {
+        return String(src);
+    }
+}
+
+function readRotateMap() {
+    try {
+        const raw = window.localStorage.getItem(rotateMapStorageKey);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return {};
+        return parsed;
+    } catch (e) {
+        return {};
+    }
+}
+
+function getPhotoRotateDeg(photoSrc) {
+    const key = normalizePhotoKey(photoSrc);
+    if (!key) return 0;
+    const map = readRotateMap();
+    return normalizeRotateDeg(map[key]);
+}
+
+function getGridGapPx(canvasWidth, canvasHeight) {
+    const cfg = (typeof frameConfig !== 'undefined' && frameConfig) ? frameConfig : {};
+    const ratio = (typeof cfg.grid_gap_ratio === 'number') ? cfg.grid_gap_ratio : 0.020;
+    const base = Math.min(canvasWidth, canvasHeight);
+    return Math.max(0, Math.round(base * ratio));
+}
+
+function getRowGapPx(canvasWidth, canvasHeight) {
+    const cfg = (typeof globalGapConfig !== 'undefined' && globalGapConfig) ? globalGapConfig : {};
+    const ratio = (typeof cfg.row_gap_ratio === 'number') ? cfg.row_gap_ratio : null;
+    if (ratio === null) return getGridGapPx(canvasWidth, canvasHeight);
+    const base = Math.min(canvasWidth, canvasHeight);
+    const clamped = Math.max(0, Math.min(0.060, ratio));
+    return Math.max(0, Math.round(base * clamped));
+}
+
+const loadImage = (src) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        // Keep same-origin to avoid CORS issues when running on 127.0.0.1 vs localhost
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+    });
+};
+
+function roundedRectPath(ctx, x, y, w, h, r) {
+    const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+}
+
+function computeContainRect(iw, ih, x, y, w, h) {
+    const scale = Math.min(w / iw, h / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = x + (w - dw) / 2;
+    const dy = y + (h - dh) / 2;
+    return { dx, dy, dw, dh };
+}
+
+function computeCoverRect(iw, ih, x, y, w, h) {
+    const scale = Math.max(w / iw, h / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = x + (w - dw) / 2;
+    const dy = y + (h - dh) / 2;
+    return { dx, dy, dw, dh };
+}
+
+function computeCoverRectAnchored(iw, ih, x, y, w, h, ax = 0.5, ay = 0.5) {
+    const scale = Math.max(w / iw, h / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const clamp = (v) => Math.max(0, Math.min(1, v));
+    const dx = x + (w - dw) * clamp(ax);
+    const dy = y + (h - dh) * clamp(ay);
+    return { dx, dy, dw, dh };
+}
+
+function drawImageRotated(ctx, img, dx, dy, dw, dh, rotateDeg) {
+    const deg = normalizeRotateDeg(rotateDeg);
+    if (!deg) {
+        ctx.drawImage(img, dx, dy, dw, dh);
+        return;
+    }
+    const rad = (deg * Math.PI) / 180;
+    ctx.save();
+    ctx.translate(dx + dw / 2, dy + dh / 2);
+    ctx.rotate(rad);
+    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+    ctx.restore();
+}
+
+function drawContain(ctx, img, x, y, w, h, rotateDeg = 0) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const deg = normalizeRotateDeg(rotateDeg);
+    const iwEff = (deg === 90 || deg === 270) ? ih : iw;
+    const ihEff = (deg === 90 || deg === 270) ? iw : ih;
+    const { dx, dy, dw, dh } = computeContainRect(iwEff, ihEff, x, y, w, h);
+    drawImageRotated(ctx, img, dx, dy, dw, dh, deg);
+}
+
+function drawCover(ctx, img, x, y, w, h, rotateDeg = 0) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const deg = normalizeRotateDeg(rotateDeg);
+    const iwEff = (deg === 90 || deg === 270) ? ih : iw;
+    const ihEff = (deg === 90 || deg === 270) ? iw : ih;
+    const { dx, dy, dw, dh } = computeCoverRect(iwEff, ihEff, x, y, w, h);
+    drawImageRotated(ctx, img, dx, dy, dw, dh, deg);
+}
+
+function drawCoverAnchored(ctx, img, x, y, w, h, rotateDeg = 0, ax = 0.5, ay = 0.5) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const deg = normalizeRotateDeg(rotateDeg);
+    const iwEff = (deg === 90 || deg === 270) ? ih : iw;
+    const ihEff = (deg === 90 || deg === 270) ? iw : ih;
+    const { dx, dy, dw, dh } = computeCoverRectAnchored(iwEff, ihEff, x, y, w, h, ax, ay);
+    drawImageRotated(ctx, img, dx, dy, dw, dh, deg);
+}
+
+function drawPhotoWithBorder(ctx, img, x, y, w, h, rotateDeg = 0) {
+    const cfg = (typeof frameConfig !== 'undefined' && frameConfig) ? frameConfig : {};
+    const slot = Math.min(w, h);
+
+    // Make the photo a bit smaller inside the slot
+    const padRatio = (typeof cfg.pad_ratio === 'number') ? cfg.pad_ratio : 0.070;
+    const pad = Math.max(10, Math.round(slot * padRatio));
+    const rx = x + pad;
+    const ry = y + pad;
+    const rw = Math.max(1, w - pad * 2);
+    const rh = Math.max(1, h - pad * 2);
+
+    // Photo (contain)
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const deg = normalizeRotateDeg(rotateDeg);
+    const iwEff = (deg === 90 || deg === 270) ? ih : iw;
+    const ihEff = (deg === 90 || deg === 270) ? iw : ih;
+    const base = computeContainRect(iwEff, ihEff, rx, ry, rw, rh);
+    const scale = (typeof cfg.scale === 'number') ? cfg.scale : 1.000;
+    const offsetX = (typeof cfg.offset_x === 'number') ? cfg.offset_x : 0.000;
+    const offsetY = (typeof cfg.offset_y === 'number') ? cfg.offset_y : 0.000;
+    const dw = base.dw * scale;
+    const dh = base.dh * scale;
+    const dx = rx + (rw - dw) / 2 + (offsetX * rw);
+    const dy = ry + (rh - dh) / 2 + (offsetY * rh);
+
+    // Border follows the actual drawn photo area (no letterbox space)
+    const borderW = Math.max(3, Math.round(slot * 0.012));
+    const bx = dx + borderW / 2;
+    const by = dy + borderW / 2;
+    const bw = Math.max(1, dw - borderW);
+    const bh = Math.max(1, dh - borderW);
+    const radius = Math.max(10, Math.round(Math.min(bw, bh) * 0.07));
+
+    // Clip photo to rounded corners so it never shows outside the border
+    ctx.save();
+    roundedRectPath(ctx, bx, by, bw, bh, radius);
+    ctx.clip();
+    drawImageRotated(ctx, img, dx, dy, dw, dh, deg);
+    ctx.restore();
+
+    // Border on top
+    ctx.save();
+    ctx.lineWidth = borderW;
+    ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+    roundedRectPath(ctx, bx, by, bw, bh, radius);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function getCells(layoutKey, canvasWidth, canvasHeight) {
+    const padding = getBasePadding(canvasWidth, canvasHeight);
+    const colGap = getGridGapPx(canvasWidth, canvasHeight);
+    const rowGap = getRowGapPx(canvasWidth, canvasHeight);
+    const innerW = canvasWidth - padding * 2;
+    const innerH = canvasHeight - padding * 2;
+
+    if (layoutKey === 'layout1') {
+        // Full-bleed A6 for layout1
+        return [{ x: 0, y: 0, w: canvasWidth, h: canvasHeight }];
+    }
+
+    if (layoutKey === 'layout2') {
+        // Layout2 now uses 2 photos by default: 2 columns × 1 row
+        const cols = 2;
+        const cellW = (innerW - colGap * (cols - 1)) / cols;
+        const cellH = innerH;
+        const top = padding;
+        const left = padding;
+        return [
+            { x: left, y: top, w: cellW, h: cellH, row: 0, col: 0 },
+            { x: left + cellW + colGap, y: top, w: cellW, h: cellH, row: 0, col: 1 },
+        ];
+    }
+
+    if (layoutKey === 'layout3') {
+        // Special: 2 kolom × 3 baris; tiap baris pakai foto yang sama (1|1, 2|2, 3|3)
+        const cols = 2;
+        const rows = 3;
+        const cellW = (innerW - colGap * (cols - 1)) / cols;
+        const cellH = (innerH - rowGap * (rows - 1)) / rows;
+        const cells = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                cells.push({
+                    x: padding + c * (cellW + colGap),
+                    y: padding + r * (cellH + rowGap),
+                    w: cellW,
+                    h: cellH,
+                    photoIndex: r,
+                });
+            }
+        }
+        return cells;
+    }
+
+    // layout4: 6 foto (3×2) => 2 kolom, 3 baris
+    const cols = 2;
+    const rows = 3;
+    const cellW = (innerW - colGap * (cols - 1)) / cols;
+    const cellH = (innerH - rowGap * (rows - 1)) / rows;
+    const cells = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            cells.push({
+                x: padding + c * (cellW + colGap),
+                y: padding + r * (cellH + rowGap),
+                w: cellW,
+                h: cellH,
+            });
+        }
+    }
+    return cells;
+}
+
+function isBackgroundFrame(url) {
+    if (!url) return false;
+    const clean = String(url).split('?')[0].toLowerCase();
+    return clean.endsWith('.jpg') || clean.endsWith('.jpeg');
+}
+
+function normalizeLayoutKey(value) {
+    const raw = String(value ?? '').toLowerCase().trim();
+    // Accept: 'layout3', 'layout-3', '3'
+    const digits = raw.replace(/[^0-9]/g, '');
+    if (digits === '1' || digits === '2' || digits === '3' || digits === '4') return `layout${digits}`;
+    return raw.replace(/\s+/g, '');
+}
+
+function estimateHasAlpha(img) {
+    // Sample alpha channel; robust against tiny anti-aliasing edges.
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const w = Math.max(1, Math.min(220, iw));
+    const h = Math.max(1, Math.min(220, ih));
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const cctx = c.getContext('2d', { willReadFrequently: true });
+    cctx.clearRect(0, 0, w, h);
+    cctx.drawImage(img, 0, 0, w, h);
+    const data = cctx.getImageData(0, 0, w, h).data;
+
+    const total = w * h;
+    let nonOpaque = 0;
+    // stride 16 pixels to keep it fast
+    const stride = 16 * 4;
+    for (let i = 3; i < data.length; i += stride) {
+        if (data[i] < 250) nonOpaque++;
+    }
+    // nonOpaque is sampled; treat as overlay only if there's meaningful transparency
+    const sampledTotal = Math.ceil(data.length / stride);
+    const ratio = sampledTotal ? nonOpaque / sampledTotal : 0;
+    return ratio > 0.01;
+}
+
+function sampleAverageOpaqueColor(img) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const w = Math.max(1, Math.min(220, iw));
+    const h = Math.max(1, Math.min(220, ih));
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const cctx = c.getContext('2d', { willReadFrequently: true });
+    cctx.clearRect(0, 0, w, h);
+    cctx.drawImage(img, 0, 0, w, h);
+    const data = cctx.getImageData(0, 0, w, h).data;
+
+    let r = 0, g = 0, b = 0, count = 0;
+    const stride = 12 * 4;
+    for (let i = 0; i < data.length; i += stride) {
+        const a = data[i + 3];
+        if (a >= 240) {
+            r += data[i];
+            g += data[i + 1];
+            b += data[i + 2];
+            count++;
+        }
+    }
+    if (!count) return null;
+    r = Math.round(r / count);
+    g = Math.round(g / count);
+    b = Math.round(b / count);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+const __windowRectCache = Object.create(null);
+
+function __isNearWhite(r, g, b, a) {
+    if (a < 220) return false;
+    return r >= 245 && g >= 245 && b >= 245;
+}
+
+function __roundedRectPath(ctx, x, y, w, h, r) {
+    const radius = Math.max(0, Math.min(r || 0, Math.min(w, h) / 2));
+    ctx.beginPath();
+    if (radius <= 0) {
+        ctx.rect(x, y, w, h);
+        return;
+    }
+    if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(x, y, w, h, radius);
+        return;
+    }
+    const rr = radius;
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+}
+
+function __estimateRadiusRatioFromMask(minX, minY, maxX, maxY, w, h, data) {
+    const boxW = (maxX - minX + 1);
+    const boxH = (maxY - minY + 1);
+    const minSide = Math.max(1, Math.min(boxW, boxH));
+    const maxR = Math.max(0, Math.floor(minSide / 2));
+
+    function isWhiteAt(x, y) {
+        if (x < 0 || y < 0 || x >= w || y >= h) return false;
+        const i = (y * w + x) * 4;
+        return __isNearWhite(data[i], data[i + 1], data[i + 2], data[i + 3]);
+    }
+
+    function whiteScore2x2(x, y, sx, sy) {
+        let score = 0;
+        if (isWhiteAt(x, y)) score++;
+        if (isWhiteAt(x + sx, y)) score++;
+        if (isWhiteAt(x, y + sy)) score++;
+        if (isWhiteAt(x + sx, y + sy)) score++;
+        return score;
+    }
+
+    function diagRadius(cornerX, cornerY, sx, sy) {
+        for (let d = 0; d <= maxR; d++) {
+            const x = cornerX + sx * d;
+            const y = cornerY + sy * d;
+            if (whiteScore2x2(x, y, sx, sy) >= 3) return d;
+        }
+        return 0;
+    }
+
+    const tl = diagRadius(minX, minY, 1, 1);
+    const tr = diagRadius(maxX, minY, -1, 1);
+    const bl = diagRadius(minX, maxY, 1, -1);
+    const br = diagRadius(maxX, maxY, -1, -1);
+    const r = Math.min(tl, tr, bl, br);
+    const stable = (r <= 1) ? 0 : r;
+    return Math.max(0, Math.min(0.5, stable / minSide));
+}
+
+function detectWhiteWindowsFromFrame(img, maxCount) {
+    try {
+        const iw = img.naturalWidth || img.width;
+        const ih = img.naturalHeight || img.height;
+        if (!iw || !ih) return null;
+
+        const targetW = Math.max(180, Math.min(520, iw));
+        const scale = targetW / iw;
+        const w = Math.max(1, Math.round(iw * scale));
+        const h = Math.max(1, Math.round(ih * scale));
+
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const cctx = c.getContext('2d', { willReadFrequently: true });
+        cctx.clearRect(0, 0, w, h);
+        cctx.drawImage(img, 0, 0, w, h);
+        const data = cctx.getImageData(0, 0, w, h).data;
+
+        const visited = new Uint8Array(w * h);
+        const queue = new Int32Array(w * h);
+        const comps = [];
+
+        for (let p = 0; p < w * h; p++) {
+            if (visited[p]) continue;
+            const i = p * 4;
+            if (!__isNearWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) continue;
+
+            let qh = 0, qt = 0;
+            queue[qt++] = p;
+            visited[p] = 1;
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let area = 0;
+
+            while (qh < qt) {
+                const idx = queue[qh++];
+                const x = idx % w;
+                const y = (idx / w) | 0;
+                area++;
+
+                if (x < minX) minX = x;
+                if (y < minY) minY = y;
+                if (x > maxX) maxX = x;
+                if (y > maxY) maxY = y;
+
+                if (x > 0) {
+                    const n = idx - 1;
+                    if (!visited[n]) {
+                        const ni = n * 4;
+                        if (__isNearWhite(data[ni], data[ni + 1], data[ni + 2], data[ni + 3])) {
+                            visited[n] = 1;
+                            queue[qt++] = n;
+                        }
+                    }
+                }
+                if (x + 1 < w) {
+                    const n = idx + 1;
+                    if (!visited[n]) {
+                        const ni = n * 4;
+                        if (__isNearWhite(data[ni], data[ni + 1], data[ni + 2], data[ni + 3])) {
+                            visited[n] = 1;
+                            queue[qt++] = n;
+                        }
+                    }
+                }
+                if (y > 0) {
+                    const n = idx - w;
+                    if (!visited[n]) {
+                        const ni = n * 4;
+                        if (__isNearWhite(data[ni], data[ni + 1], data[ni + 2], data[ni + 3])) {
+                            visited[n] = 1;
+                            queue[qt++] = n;
+                        }
+                    }
+                }
+                if (y + 1 < h) {
+                    const n = idx + w;
+                    if (!visited[n]) {
+                        const ni = n * 4;
+                        if (__isNearWhite(data[ni], data[ni + 1], data[ni + 2], data[ni + 3])) {
+                            visited[n] = 1;
+                            queue[qt++] = n;
+                        }
+                    }
+                }
+            }
+
+            if (area >= Math.max(400, Math.round(w * h * 0.002))) {
+                comps.push({ minX, minY, maxX, maxY, area });
+            }
+        }
+
+        if (comps.length < 1) return null;
+        comps.sort((a, b) => b.area - a.area);
+        const want = Math.max(1, Math.min(12, Number(maxCount) || 1));
+        const top = comps.slice(0, want);
+        top.sort((a, b) => (a.minY - b.minY) || (a.minX - b.minX));
+
+        return top.map((c) => {
+            const x0 = c.minX / w;
+            const y0 = c.minY / h;
+            const x1 = (c.maxX + 1) / w;
+            const y1 = (c.maxY + 1) / h;
+            const rr = __estimateRadiusRatioFromMask(c.minX, c.minY, c.maxX, c.maxY, w, h, data);
+            return {
+                x: Math.max(0, Math.min(1, x0)),
+                y: Math.max(0, Math.min(1, y0)),
+                w: Math.max(0, Math.min(1, x1 - x0)),
+                h: Math.max(0, Math.min(1, y1 - y0)),
+                r: rr,
+            };
+        });
+    } catch (e) {
+        return null;
+    }
+}
+
+function getWindowRects(frameUrl, frameImg, maxCount) {
+    if (!frameUrl || !frameImg) return null;
+    const key = `${frameUrl}|${maxCount}`;
+    if (__windowRectCache[key]) return __windowRectCache[key];
+    const rects = detectWhiteWindowsFromFrame(frameImg, maxCount);
+    __windowRectCache[key] = rects;
+    return rects;
+}
+
+function windowRectsToCells(rects, canvasWidth, canvasHeight, layoutKey) {
+    const cells = [];
+    if (!Array.isArray(rects) || !rects.length) return cells;
+    for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        cells.push({
+            x: r.x * canvasWidth,
+            y: r.y * canvasHeight,
+            w: r.w * canvasWidth,
+            h: r.h * canvasHeight,
+            r: typeof r.r === 'number' ? r.r : 0,
+            photoIndex: (layoutKey === 'layout3') ? Math.floor(i / 2) : i,
+        });
+    }
+    return cells;
+}
+
+function drawFrameOverlayWithHoles(ctx, frameImg, canvasWidth, canvasHeight, rects) {
+    if (!frameImg) return;
+    const off = document.createElement('canvas');
+    off.width = canvasWidth;
+    off.height = canvasHeight;
+    const octx = off.getContext('2d');
+    octx.clearRect(0, 0, canvasWidth, canvasHeight);
+    octx.drawImage(frameImg, 0, 0, canvasWidth, canvasHeight);
+
+    const bleed = Math.max(1, Math.round(Math.min(canvasWidth, canvasHeight) * 0.002));
+    octx.save();
+    octx.globalCompositeOperation = 'destination-out';
+    octx.fillStyle = '#000';
+    (rects || []).forEach((r) => {
+        const x = r.x * canvasWidth;
+        const y = r.y * canvasHeight;
+        const w = r.w * canvasWidth;
+        const h = r.h * canvasHeight;
+        const ex = x - bleed;
+        const ey = y - bleed;
+        const ew = w + bleed * 2;
+        const eh = h + bleed * 2;
+        const radius = (typeof r.r === 'number' ? r.r : 0) * Math.min(ew, eh);
+        __roundedRectPath(octx, ex, ey, ew, eh, radius + bleed);
+        octx.fill();
+    });
+    octx.restore();
+
+    ctx.drawImage(off, 0, 0);
+}
+
+(async function () {
+    try {
+    const FORCE_PRINT_PICTURES = (typeof forcePrintPictures === 'boolean') ? forcePrintPictures : false;
+    const normalizedLayoutKey = normalizeLayoutKey(typeof layoutKey !== 'undefined' ? layoutKey : '');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // A6 at PRINT_DPI
+        canvas.width = mmToPx(A6_W_MM, PRINT_DPI);
+        canvas.height = mmToPx(A6_H_MM, PRINT_DPI);
+
+        // default background
+        ctx.fillStyle = '#fff7ed';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Decide frame mode:
+        // - JPG/JPEG always background
+        // - PNG/WEBP: if opaque => background, if has alpha => overlay
+        const hasFrame = typeof frameUrl !== 'undefined' && frameUrl;
+        let frameImg = null;
+        let frameMode = null; // 'background' | 'overlay'
+        let windowRects = null;
+        if (hasFrame) {
+            try {
+                frameImg = await loadImage(frameUrl);
+                if (isBackgroundFrame(frameUrl)) {
+                    frameMode = 'background';
+                } else {
+                    frameMode = estimateHasAlpha(frameImg) ? 'overlay' : 'background';
+                }
+
+                const expected = (normalizedLayoutKey === 'layout3') ? 6 : (normalizedLayoutKey === 'layout2' ? 2 : 0);
+                if (expected > 0) {
+                    windowRects = getWindowRects(frameUrl, frameImg, expected);
+                    if (Array.isArray(windowRects) && windowRects.length >= expected) {
+                        frameMode = 'holes';
+                    }
+                }
+
+                // If frame is overlay (transparent), set background to match the frame tone
+                if (frameMode === 'overlay') {
+                    const sampled = sampleAverageOpaqueColor(frameImg);
+                    if (sampled) {
+                        ctx.fillStyle = sampled;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+
+                if (frameMode === 'background') {
+                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                }
+            } catch (e) {
+                console.warn('Frame load failed', e);
+                frameImg = null;
+                frameMode = null;
+            }
+        }
+
+        const cells = ((normalizedLayoutKey === 'layout3' || normalizedLayoutKey === 'layout2') && Array.isArray(windowRects) && windowRects.length)
+            ? windowRectsToCells(windowRects, canvas.width, canvas.height, normalizedLayoutKey)
+            : getCells(normalizedLayoutKey, canvas.width, canvas.height);
+
+        // Determine which photo indices are needed for this layout
+        const indices = Array.from(
+            new Set(
+                cells
+                    .map((c, idx) => (typeof c.photoIndex === 'number' ? c.photoIndex : idx))
+                    .filter((i) => i >= 0)
+            )
+        ).sort((a, b) => a - b);
+
+        const maxIndex = indices.length ? Math.max(...indices) : -1;
+        const needPhotos = Math.min(photos.length, maxIndex + 1);
+        const imgs = await Promise.all(photos.slice(0, needPhotos).map(loadImage));
+
+        for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            const photoIdx = typeof cell.photoIndex === 'number' ? cell.photoIndex : i;
+            if (photoIdx >= 0 && photoIdx < imgs.length) {
+                const rotateDeg = getPhotoRotateDeg(photos[photoIdx]);
+                let rx = cell.x, ry = cell.y, rw = cell.w, rh = cell.h;
+                if (normalizedLayoutKey === 'layout2' && typeof cell.row === 'number') {
+                    const cfg = (typeof frameConfig !== 'undefined' && frameConfig) ? frameConfig : {};
+                    const anchorRatio = (typeof cfg.row_anchor_ratio === 'number') ? cfg.row_anchor_ratio : 1.000;
+                    const ratio = Math.max(0, Math.min(1, anchorRatio));
+
+                    // Use a square slot and pull rows toward the center to reduce the middle band.
+                    const size = Math.min(cell.w, cell.h);
+                    const dx = (cell.w - size) / 2;
+                    const dy = (cell.h - size);
+                    const y = (cell.row === 0)
+                        ? (cell.y + dy * (0.5 + 0.5 * ratio))
+                        : (cell.y + dy * (0.5 - 0.5 * ratio));
+
+                    rx = cell.x + dx;
+                    ry = y;
+                    rw = size;
+                    rh = size;
+                }
+
+                if (normalizedLayoutKey === 'layout1') {
+                    drawCover(ctx, imgs[photoIdx], rx, ry, rw, rh, rotateDeg);
+                } else if ((normalizedLayoutKey === 'layout3' || normalizedLayoutKey === 'layout2') && Array.isArray(windowRects) && windowRects.length) {
+                    // For detected frame windows, draw photo as cover (no white border).
+                    const anchorY = (normalizedLayoutKey === 'layout3') ? 0.0 : 0.5;
+                    const radius = (typeof cell.r === 'number' ? cell.r : 0) * Math.min(rw, rh);
+                    ctx.save();
+                    __roundedRectPath(ctx, rx, ry, rw, rh, radius);
+                    ctx.clip();
+                    drawCoverAnchored(ctx, imgs[photoIdx], rx, ry, rw, rh, rotateDeg, 0.5, anchorY);
+                    ctx.restore();
+                } else {
+                    drawPhotoWithBorder(ctx, imgs[photoIdx], rx, ry, rw, rh, rotateDeg);
+                }
+            }
+        }
+
+        // Overlay frame (if transparent)
+        if (hasFrame && frameImg) {
+            if (frameMode === 'overlay') {
+                ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+            }
+            if (frameMode === 'holes' && Array.isArray(windowRects) && windowRects.length) {
+                drawFrameOverlayWithHoles(ctx, frameImg, canvas.width, canvas.height, windowRects);
+            }
+        }
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Save collage to a stable file so printing is consistent and "rapi"
+        let printSrc = dataUrl;
+        try {
+            const tokenEl = document.querySelector('meta[name="csrf-token"]');
+            const csrf = tokenEl ? tokenEl.getAttribute('content') : null;
+            if (csrf) {
+                const fd = new FormData();
+                fd.append('email', email);
+                fd.append('photo', dataUrl.split(',')[1]);
+                const resp = await fetch('/save-collage', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    body: fd,
+                });
+                const json = await resp.json();
+                if (resp.ok && json && json.ok && json.url) {
+                    printSrc = json.url;
+                }
+            }
+        } catch (e) {
+            // ignore and fallback to dataUrl
+        }
+
+        async function openWindowsPrintPictures() {
+            try {
+                const tokenEl = document.querySelector('meta[name="csrf-token"]');
+                const csrf = tokenEl ? tokenEl.getAttribute('content') : null;
+                if (!csrf) return false;
+
+                // Only meaningful on Windows kiosk.
+                const isWindows = /Windows/i.test(navigator.userAgent || '');
+                if (!isWindows) return false;
+
+                const fd = new FormData();
+                fd.append('email', email);
+                const resp = await fetch('/open-print-pictures', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    body: fd,
+                });
+                const json = await resp.json().catch(() => ({}));
+                return !!(resp.ok && json && json.ok);
+            } catch (e) {
+                return false;
+            }
+        }
+
+                function ensureForceOverlay() {
+                        let el = document.getElementById('pb-force-print');
+                        if (el) return el;
+                        el = document.createElement('div');
+                        el.id = 'pb-force-print';
+                        el.style.position = 'fixed';
+                        el.style.inset = '0';
+                        el.style.zIndex = '99999';
+                        el.style.display = 'none';
+                        el.style.alignItems = 'center';
+                        el.style.justifyContent = 'center';
+                        el.style.padding = '18px';
+                        el.style.background = 'rgba(0,0,0,0.6)';
+                        el.innerHTML = `
+                            <div style="width:min(560px, 92vw); border-radius: 16px; padding: 18px 16px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.10); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0,0,0,0.45); color: #fff; text-align: center;">
+                                <div style="font-family:'Bungee'; font-size: 18px; text-shadow: 0 2px 10px rgba(0,0,0,0.75);">PRINT</div>
+                                <div id="pb-force-print-msg" style="margin-top:10px; opacity:0.95; line-height: 1.5;">
+                                    Sedang membuka Print Pictures…
+                                </div>
+                                <div style="margin-top: 14px; display:flex; gap: 10px; justify-content:center; flex-wrap: wrap;">
+                                    <button type="button" id="pb-force-print-retry" class="formbutton" style="min-width: 160px;">COBA LAGI</button>
+                                    <button type="button" id="pb-force-print-done" class="formbutton" style="min-width: 160px;">SUDAH PRINT</button>
+                                </div>
+                                <div style="margin-top: 10px; font-size: 12px; opacity: 0.75;">
+                                    Jika dialog tidak muncul, coba Alt+Tab. Setelah selesai print, tekan “Sudah Print”.
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(el);
+                        return el;
+                }
+
+                function showForceOverlay(message) {
+                        const el = ensureForceOverlay();
+                        const msg = document.getElementById('pb-force-print-msg');
+                        if (msg && message) msg.textContent = message;
+                        el.style.display = 'flex';
+                }
+
+                function hideForceOverlay() {
+                        const el = document.getElementById('pb-force-print');
+                        if (el) el.style.display = 'none';
+                }
+
+        // Print copies: keep single A6 to match the listphoto preview.
+        // Only duplicate when explicitly intended.
+        const copies = (normalizedLayoutKey === 'layout4') ? 2 : 1;
+
+        async function sendMailNow() {
+            const tokenEl = document.querySelector('meta[name="csrf-token"]');
+            const csrf = tokenEl ? tokenEl.getAttribute('content') : null;
+            if (!csrf) throw new Error('Missing CSRF token');
+
+            const data = new FormData();
+            data.append('email', email);
+            data.append('photo', dataUrl.split(',')[1]);
+
+            const resp = await fetch('/send-mail', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                body: data,
+            });
+
+            // API sometimes returns redirect/HTML on failure; treat non-2xx as failure.
+            if (!resp.ok) {
+                let text = '';
+                try { text = await resp.text(); } catch (e) { /* ignore */ }
+                throw new Error(text || `send-mail failed (${resp.status})`);
+            }
+            return true;
+        }
+
+        // Send email as soon as the print dialog completes.
+        // Note: browsers don't expose a reliable "clicked Print" signal;
+        // `afterprint` is the closest event.
+        let mailTriggered = false;
+        window.addEventListener('message', async (evt) => {
+            try {
+                if (!evt || evt.origin !== window.location.origin) return;
+                if (!evt.data || evt.data.type !== 'PB_AFTERPRINT') return;
+                if (mailTriggered) return;
+                mailTriggered = true;
+                await sendMailNow();
+            } catch (e) {
+                console.error('Send-mail error:', e);
+            } finally {
+                window.location.href = '/finish';
+            }
+        });
+
+        // Preferred on Windows kiosk: optionally open native "Print Pictures" wizard for the saved JPG.
+        // If `forceUseBrowser` is true we skip native and always use browser auto-print instead.
+        const nativeOpened = (typeof forceUseBrowser !== 'undefined' && forceUseBrowser) ? false : await openWindowsPrintPictures();
+        if (FORCE_PRINT_PICTURES) {
+            // Force mode: prefer Print Pictures, but if it cannot be opened, auto-fallback to browser print.
+            // Browser print will be truly "auto" only when Chrome is started with --kiosk-printing.
+            if (!nativeOpened) {
+                // If we're forcing browser auto-print, don't show the overlay at all.
+                if (typeof forceUseBrowser !== 'undefined' && forceUseBrowser) {
+                    // continue silently to browser print
+                } else {
+                    showForceOverlay('Print Pictures tidak muncul. Menggunakan auto print...');
+                    // Give the user a moment to read the message, then hide overlay and continue to browser print.
+                    setTimeout(() => hideForceOverlay(), 600);
+                }
+                // Continue to browser print flow below (no early return).
+            } else {
+                showForceOverlay('Dialog Print Pictures sudah dibuka. Silakan print, lalu tekan “Sudah Print”.');
+            }
+
+            const retryBtn = document.getElementById('pb-force-print-retry');
+            const doneBtn = document.getElementById('pb-force-print-done');
+
+            if (retryBtn) {
+                retryBtn.onclick = async () => {
+                    showForceOverlay('Mencoba membuka Print Pictures…');
+                    const ok = await openWindowsPrintPictures();
+                    showForceOverlay(ok
+                        ? 'Dialog Print Pictures sudah dibuka. Silakan print, lalu tekan “Sudah Print”.'
+                        : 'Masih belum muncul. Coba Alt+Tab atau buka folder collage dan print manual.');
+                };
+            }
+
+            if (doneBtn) {
+                doneBtn.onclick = async () => {
+                    showForceOverlay('Mengirim email…');
+                    try {
+                        await sendMailNow();
+                    } catch (e) {
+                        console.error('Send-mail error (force print):', e);
+                    }
+                    hideForceOverlay();
+                    window.location.href = '/finish';
+                };
+            }
+
+            // If native wizard opened, require operator confirmation. Otherwise, fallback to browser print.
+            if (nativeOpened) return;
+        }
+
+        if (nativeOpened) {
+            // We can't detect when the wizard finishes printing; send email immediately.
+            try {
+                await sendMailNow();
+            } catch (e) {
+                console.error('Send-mail error (native print):', e);
+            }
+            window.location.href = '/finish';
+            return;
+        }
+
+        const printWindow = window.open('', '', 'height:50px,width:50px');
+        if (!printWindow) {
+            // Popup blocked; fallback: still send email and finish.
+            try {
+                await sendMailNow();
+            } catch (e) {
+                console.error('Send-mail error (popup blocked):', e);
+            }
+            window.location.href = '/finish';
+            return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Cetak Kolase Foto</title>
+                    <style>@media print {
+                        @page {
+                            padding: 0;
+                            margin: 0;
+                            size: 105mm 148mm;
+                        }
+                        html, body {
+                            width: 105mm;
+                            height: 148mm;
+                            margin: 0;
+                            padding: 0;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        body { display: flex; }
+                        .photo-container {
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: center;
+                            width: 105mm;
+                            height: 148mm;
+                        }
+                        .photo-container img {
+                            display: block;
+                            width: ${copies === 1 ? '105mm' : '52.5mm'};
+                            height: 148mm;
+                            max-width: none;
+                            max-height: none;
+                            object-fit: fill;
+                        }
+                    }</style>
+                </head>
+                <body style="margin: 0; padding: 0; text-align: center;">
+                    <div class="photo-container">
+                        ${copies === 1 ? `<img src="${printSrc}" />` : `<img src="${printSrc}" /><img src="${printSrc}" />`}
+                    </div>
+                </body>
+                <script>
+                    (function () {
+                        function fireAfterPrint() {
+                            try {
+                                if (window.opener) window.opener.postMessage({ type: 'PB_AFTERPRINT' }, window.location.origin);
+                            } catch (e) {}
+                        }
+
+                        window.addEventListener('afterprint', () => {
+                            fireAfterPrint();
+                            window.close();
+                        });
+
+                        const imgs = Array.from(document.images || []);
+                        if (!imgs.length) {
+                            window.focus();
+                            window.print();
+                            return;
+                        }
+
+                        let doneCount = 0;
+                        const done = () => {
+                            doneCount++;
+                            if (doneCount >= imgs.length) {
+                                window.focus();
+                                window.print();
+                            }
+                        };
+
+                        imgs.forEach((img) => {
+                            if (img.complete) return done();
+                            img.addEventListener('load', done, { once: true });
+                            img.addEventListener('error', done, { once: true });
+                        });
+                    })();
+                </script>
+            </html>
+        `);
+        printWindow.document.close();
+    } catch (e) {
+        console.error('Print error: ', e);
+    }
+})();

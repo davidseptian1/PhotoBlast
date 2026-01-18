@@ -1,4 +1,4 @@
 <nav>
-  <h1>Photoblast</h1>
+  <h1>Photochika</h1>
   
 </nav>

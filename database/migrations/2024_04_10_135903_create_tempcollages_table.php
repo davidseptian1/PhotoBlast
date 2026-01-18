@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('y');
             $table->float('width');
             $table->float('height');
+            $table->float('margin');
             $table->timestamps();
         });
     }

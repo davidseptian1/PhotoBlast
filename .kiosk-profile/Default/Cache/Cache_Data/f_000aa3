@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photochika</title>
+  <meta name="theme-color" content="#6777ef">
+  <link rel="apple-touch-icon" href="http://127.0.0.1:8000/logo.png">
+  <link rel="manifest" href="http://127.0.0.1:8000/manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="http://127.0.0.1:8000/css/style.css">
+  
+  
+  </head>
+<body class="">
+    <section style="max-width: 1100px; margin: 0 auto; padding: 24px;">
+    <h1 style="font-family: 'Bungee';">Admin - Frame per Layout</h1>
+
+    <p style="margin-top: 6px; opacity: 0.9;">
+      Target saat ini: <b>Layout 2 (4 foto)</b>. Frame yang kamu upload/simpan di sini akan muncul di halaman <b>/listphoto</b> ketika user memilih layout ini.
+    </p>
+
+          <p style="padding: 10px 12px; border: 1px solid #cfd4da; border-radius: 10px;">Frame berhasil diupload</p>
+    
+    <form method="GET" action="http://127.0.0.1:8000/admin/frames" style="display:flex; gap:12px; align-items:center; margin: 18px 0; flex-wrap:wrap;">
+      <label for="layout"><b>Pilih Layout Target</b></label>
+      <select id="layout" name="layout" style="padding: 10px 12px; border-radius: 10px;">
+                            <option value="layout1" >Layout 1 (1 foto)</option>
+                            <option value="layout2"  selected >Layout 2 (4 foto)</option>
+                            <option value="layout3" >Layout 3 (4 foto)</option>
+                            <option value="layout4" >Layout 4 (6 foto)</option>
+              </select>
+                  <button type="submit" class="formbutton" style="width:auto; padding: 10px 16px;">Tampilkan</button>
+    </form>
+
+    <h2 style="margin-top: 18px; font-family: 'Bungee';">1) Upload Frame Baru</h2>
+    <form method="POST" action="http://127.0.0.1:8000/admin/frames" enctype="multipart/form-data" style="border: 1px solid #cfd4da; border-radius: 14px; padding: 16px;">
+      <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">      <input type="hidden" name="layout" value="layout2" />
+      <p style="margin: 0 0 10px; opacity: 0.9;">Frame akan disimpan ke <b>storage/app/public/frames/layout2</b> dan bisa diakses via <b>/storage/frames/layout2</b>.</p>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <input type="file" name="frames[]" accept="image/png,image/jpeg,image/webp" multiple />
+        <button type="submit" class="formbutton" style="width:auto; padding: 10px 16px;">Upload ke layout2</button>
+      </div>
+          </form>
+
+    <h2 style="margin-top: 24px; font-family: 'Bungee';">Frames Tersimpan (layout2)</h2>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px;">
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/3bc836ec-f19f-4d0a-8326-69139fb3d8fb.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="53" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">3bc836ec-f19f-4d0a-8326-69139fb3d8fb.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=53" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="53" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/9223f0d8-c40c-4c3d-a6cc-49e116b792d0.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="39" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">9223f0d8-c40c-4c3d-a6cc-49e116b792d0.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=39" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="39" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/7e206ea1-7e1d-475f-b278-2e4f9aa10a2c.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="35" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">7e206ea1-7e1d-475f-b278-2e4f9aa10a2c.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=35" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="35" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/a9933457-0826-43d9-a4ad-0b8af8b17c6f.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="34" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">a9933457-0826-43d9-a4ad-0b8af8b17c6f.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=34" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="34" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/eefccc19-7206-4c87-a57c-0b4a97574197.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="32" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">eefccc19-7206-4c87-a57c-0b4a97574197.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=32" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="32" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+                  <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 10px;">
+            <img src="/storage/frames/layout2/42ff058c-de04-4c06-9b25-a1b4bb7f40bc.png" alt="Frame" style="width:100%; height:140px; object-fit:contain; display:block;" />
+
+            <form method="POST" action="http://127.0.0.1:8000/admin/frames/settings" style="margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">              <input type="hidden" name="layout" value="layout2" />
+              <input type="hidden" name="id" value="22" />
+
+              <label style="font-size:12px;">Photo scale
+                <input type="number" step="0.01" min="0.50" max="1.50" name="photo_scale" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Pad ratio
+                <input type="number" step="0.005" min="0.00" max="0.20" name="photo_pad_ratio" value="0.07" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset X
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_x" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+              <label style="font-size:12px;">Offset Y
+                <input type="number" step="0.01" min="-0.30" max="0.30" name="photo_offset_y" value="0" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Grid gap (jarak antar slot)
+                <input type="number" step="0.001" min="0.000" max="0.060" name="grid_gap_ratio" value="0.02" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <label style="font-size:12px;">Rapatkan baris (layout2)
+                <input type="number" step="0.05" min="0.00" max="1.00" name="row_anchor_ratio" value="1" style="width:100%; padding:8px; border-radius:10px;" />
+              </label>
+
+              <button type="submit" class="formbutton" style="grid-column: 1 / -1; width:auto; padding: 8px 12px;">Simpan Pengaturan Foto</button>
+              <small style="grid-column: 1 / -1; opacity:0.85;">Tip: kecilkan <b>Grid gap</b> untuk mendekatkan kolom/baris; <b>Rapatkan baris</b> (0–1) untuk mengurangi jarak tengah (khusus layout2); naikkan <b>Pad ratio</b> untuk mengecilkan foto; <b>Scale</b> &gt; 1 bisa memperbesar (berpotensi crop).</small>
+            </form>
+
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;">
+              <small style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 120px;">42ff058c-de04-4c06-9b25-a1b4bb7f40bc.png</small>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=&amp;frame=22" class="formbutton" style="width:auto; padding: 8px 12px;">Preview</a>
+                <form method="POST" action="http://127.0.0.1:8000/admin/frames" onsubmit="return confirm('Hapus frame ini?')">
+                  <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">                  <input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="layout" value="layout2" />
+                  <input type="hidden" name="id" value="22" />
+                  <button type="submit" class="formbutton" style="width:auto; padding: 8px 12px;">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+              </div>
+    
+    <h2 style="margin-top: 24px; font-family: 'Bungee';">2) Simpan dari Foto Template (Jadikan Frame)</h2>
+          <p style="margin-bottom: 10px; opacity: 0.9;">Step: klik salah satu foto template di bawah → lalu klik tombol “Simpan sebagai Frame”.</p>
+
+      <form method="POST" action="http://127.0.0.1:8000/admin/frames/from-template" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom: 12px;">
+        <input type="hidden" name="_token" value="hfIt1PSnWbHGUAo9DEoFTgvTHHBhkos3Me9RkOxJ" autocomplete="off">        <input type="hidden" name="layout" value="layout2" />
+        <input type="hidden" name="template_file" value="" />
+        <button type="submit" class="formbutton" style="width:auto; padding: 10px 16px;"  disabled >
+          Simpan sebagai Frame ke layout2
+        </button>
+        <small>Catatan: file akan <b>dicopy</b> dari template ke folder frames (bukan dipindah).</small>
+      </form>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+                  <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=template%2F1.png&amp;frame=0" style="display:block; border: 2px solid #cfd4da; border-radius: 12px; padding: 6px; ">
+            <img src="/storage/template/1.png" alt="Photo" style="width:100%; height:120px; object-fit:cover; display:block; border-radius: 8px;" />
+          </a>
+                  <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=template%2F2.png&amp;frame=0" style="display:block; border: 2px solid #cfd4da; border-radius: 12px; padding: 6px; ">
+            <img src="/storage/template/2.png" alt="Photo" style="width:100%; height:120px; object-fit:cover; display:block; border-radius: 8px;" />
+          </a>
+                  <a href="http://127.0.0.1:8000/admin/frames?layout=layout2&amp;photo=template%2F3.png&amp;frame=0" style="display:block; border: 2px solid #cfd4da; border-radius: 12px; padding: 6px; ">
+            <img src="/storage/template/3.png" alt="Photo" style="width:100%; height:120px; object-fit:cover; display:block; border-radius: 8px;" />
+          </a>
+              </div>
+    
+    <h2 style="margin-top: 24px; font-family: 'Bungee';">Preview (Foto + Frame)</h2>
+    <div style="border: 1px solid #cfd4da; border-radius: 14px; padding: 14px; max-width: 520px;">
+              <p>Pilih foto dulu untuk melihat preview.</p>
+          </div>
+  </section>
+  
+    <script src="http://127.0.0.1:8000/sw.js"></script>
+  <script>  
+    if(!navigator.serviceWorker.controller) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg){
+        console.log('Service worker has been registered for scope: ' + reg.scope);
+      })
+    }
+  </script>
+</body>
+</html>

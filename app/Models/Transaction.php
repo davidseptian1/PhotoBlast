@@ -11,6 +11,8 @@ class Transaction extends Model
     protected $fillable = [
         'invoice_number',
         'amount',
-        'status'
+        'status',
+        'email',
+        'method'
     ];
 }

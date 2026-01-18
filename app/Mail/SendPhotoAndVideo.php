@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -12,14 +13,20 @@ use Illuminate\Queue\SerializesModels;
 class SendPhotoAndVideo extends Mailable
 {
     use Queueable, SerializesModels;
-    public $filePath;
+    public string $redeemCode;
+    /** @var array<int, Attachment> */
+    public array $attachmentsList;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($photoPath)
+    /**
+     * @param array<int, Attachment> $attachments
+     */
+    public function __construct(string $redeemCode, array $attachments)
     {
-        $this->filePath = $photoPath;
+        $this->redeemCode = $redeemCode;
+        $this->attachmentsList = $attachments;
     }
 
     /**
@@ -28,7 +35,7 @@ class SendPhotoAndVideo extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Kenangan Foto dan Video dari Photoblast',
+            subject: 'Kenangan Foto dan Video dari Photo Studio Chika',
         );
     }
 
@@ -49,6 +56,6 @@ class SendPhotoAndVideo extends Mailable
      */
     public function attachments(): array
     {
-        return $this->filePath;
+        return $this->attachmentsList;
     }
 }

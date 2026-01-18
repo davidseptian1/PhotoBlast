@@ -1,30 +1,40 @@
 const template = document.querySelector(".template");
-const images = document.querySelectorAll(".template a");
-const left = document.querySelector(".left");
-const right = document.querySelector(".right");
-let currentIndex = 0;
-images[currentIndex].querySelector("img").classList.add("highlight");
-function updateSlides() {
-    const offset = -currentIndex * 300;
-    template.style.transform = `translateX(${offset}px)`;
-}
+let isDown = false;
+let startX;
+let scrollLeft;
 
-left.addEventListener("click", () => {
-    if (currentIndex === 0) {
-        return;
-    }
-    images[currentIndex].querySelector("img").classList.remove("highlight");
-    currentIndex--;
-    images[currentIndex].querySelector("img").classList.add("highlight");
-    updateSlides();
+template.addEventListener("mousedown", (e) => {
+    isDown = true;
+    template.classList.add("active");
+    startX = e.pageX - template.offsetLeft;
+    scrollLeft = template.scrollLeft;
+    console.log("Mouse down: startX =", startX, "scrollLeft =", scrollLeft);
 });
 
-right.addEventListener("click", () => {
-    if (currentIndex === images.length - 1) {
-        return;
-    }
-    images[currentIndex].querySelector("img").classList.remove("highlight");
-    currentIndex++;
-    images[currentIndex].querySelector("img").classList.add("highlight");
-    updateSlides();
+template.addEventListener("mouseleave", () => {
+    isDown = false;
+    template.classList.remove("active");
+    console.log("Mouse leave");
+});
+
+template.addEventListener("mouseup", () => {
+    isDown = false;
+    template.classList.remove("active");
+    console.log("Mouse up");
+});
+
+template.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - template.offsetLeft;
+    const walk = (x - startX) * 2;
+    template.scrollLeft = scrollLeft - walk;
+    console.log(
+        "Mouse move: x =",
+        x,
+        "walk =",
+        walk,
+        "scrollLeft =",
+        template.scrollLeft
+    );
 });

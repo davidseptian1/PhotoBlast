@@ -1,0 +1,625 @@
+const video = document.querySelector(".watch-video");
+const cameraButton = document.querySelector(".camera-button");
+const listPhoto = document.querySelector("#PhotoList");
+const countdowndisplay = document.getElementById("countdown-display");
+let timeDiv = document.querySelector(
+    "section#Camera .button .timer-button .time .value"
+);
+
+let timeClick = 0;
+
+document
+    .querySelector("section#Camera .button .timer-button button")
+    .addEventListener("click", () => {
+        timeClick++;
+        if (timeClick == 3) {
+            timeClick = 0;
+            timeDiv.innerHTML = 3;
+        } else if (timeClick == 2) {
+            timeDiv.innerHTML = 10;
+        } else if (timeClick == 1) {
+            timeDiv.innerHTML = 5;
+        }
+    });
+
+let autoCapture = document.querySelector(
+    "section#Camera .button .autocapture-button .status .value"
+);
+let auto = false;
+let captured = false;
+
+let photoCount = 0;
+let videoChunks = [];
+let recordedVideoUrl;
+let captureInterval;
+
+const FILTERS = {
+    none: "none",
+    bw: "grayscale(100%)",
+    sepia: "sepia(100%)",
+    vintage: "sepia(55%) contrast(1.1) saturate(0.9) brightness(1.05)",
+    soft: "brightness(1.05) contrast(0.95) saturate(1.1)",
+    noir: "grayscale(100%) contrast(1.3) brightness(0.9)",
+    vivid: "saturate(1.6) contrast(1.1) brightness(1.05)",
+};
+
+let currentFilterKey = "none";
+
+let cameraStream = null;
+let videoTrack = null;
+let imageCapture = null;
+let videoCaps = null;
+let displayCanvas = null;
+let displayCtx = null;
+let drawLoopId = null;
+let mirrorDisplay = false; // false = normal (no mirror), true = flipped horizontally
+
+const TARGET_ASPECT = 5 / 4;
+// Cap output width to keep file sizes reasonable while still sharp for A6 print.
+// (A6 @ 300dpi needs ~1240px width; 2000px is a safe upper cap.)
+const MAX_OUTPUT_WIDTH = 2000;
+
+function formatMaybeNumber(n) {
+    const v = Number(n);
+    return Number.isFinite(v) && v > 0 ? String(Math.round(v)) : null;
+}
+
+function updateCaptureInfo(extra = {}) {
+    const el = document.getElementById('capture-info');
+    if (!el) return;
+
+    const stillOn = !!(imageCapture && typeof imageCapture.takePhoto === 'function');
+    const label = videoTrack && videoTrack.label ? String(videoTrack.label) : null;
+
+    let settings = null;
+    try {
+        settings = videoTrack && typeof videoTrack.getSettings === 'function' ? videoTrack.getSettings() : null;
+    } catch (e) {
+        settings = null;
+    }
+
+    const trackW = settings ? formatMaybeNumber(settings.width) : null;
+    const trackH = settings ? formatMaybeNumber(settings.height) : null;
+    const fps = settings ? formatMaybeNumber(settings.frameRate) : null;
+
+    const capW = videoCaps && videoCaps.width ? formatMaybeNumber(videoCaps.width.max) : null;
+    const capH = videoCaps && videoCaps.height ? formatMaybeNumber(videoCaps.height.max) : null;
+    const capFps = videoCaps && videoCaps.frameRate ? formatMaybeNumber(videoCaps.frameRate.max) : null;
+
+    const videoW = formatMaybeNumber(video.videoWidth);
+    const videoH = formatMaybeNumber(video.videoHeight);
+
+    const outW = formatMaybeNumber(extra.outputWidth);
+    const outH = formatMaybeNumber(extra.outputHeight);
+
+    const lines = [];
+    lines.push(`Target Photos: <b>${Number(limit) || 0}</b> • Captured: <b>${photoCount}</b>`);
+    lines.push(`Still Capture: <b>${stillOn ? 'ON' : 'OFF'}</b>${stillOn ? ' (ImageCapture)' : ' (Video frame fallback)'}`);
+    if (label) lines.push(`Device: ${label}`);
+    if (capW && capH) lines.push(`Max: ${capW}×${capH}${capFps ? ` @${capFps}fps` : ''}`);
+    if (trackW && trackH) lines.push(`Track: ${trackW}×${trackH}${fps ? ` @${fps}fps` : ''}`);
+    if (videoW && videoH) lines.push(`Video: ${videoW}×${videoH}`);
+    if (outW && outH) lines.push(`Output: ${outW}×${outH} (5:4)`);
+
+    el.innerHTML = lines.join('<br>');
+}
+
+async function captureBestStillBitmap() {
+    // Prefer hardware still capture if supported.
+    if (imageCapture && typeof imageCapture.takePhoto === "function") {
+        const blob = await imageCapture.takePhoto();
+        return await createImageBitmap(blob);
+    }
+
+    // Fallback: grab current video frame.
+    return await createImageBitmap(video);
+}
+
+function computeCropRectForAspect(sw, sh, targetAspect) {
+    const srcAspect = sw / sh;
+    if (srcAspect > targetAspect) {
+        // source wider -> crop width
+        const cropW = Math.round(sh * targetAspect);
+        const cropH = sh;
+        const sx = Math.round((sw - cropW) / 2);
+        const sy = 0;
+        return { sx, sy, sWidth: cropW, sHeight: cropH };
+    }
+    // source taller -> crop height
+    const cropW = sw;
+    const cropH = Math.round(sw / targetAspect);
+    const sx = 0;
+    const sy = Math.round((sh - cropH) / 2);
+    return { sx, sy, sWidth: cropW, sHeight: cropH };
+}
+
+/**
+ * Adjust the displayed video preview to match the camera output resolution
+ * as closely as possible while keeping it visible inside the browser window.
+ */
+function adjustVideoDisplay() {
+    if (!video || !video.videoWidth || !video.videoHeight) return;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    // Cap the preview width to avoid extremely large previews
+    const MAX_PREVIEW_W = 2000;
+    const desiredW = Math.min(vw, MAX_PREVIEW_W);
+    const desiredH = Math.round(desiredW * (vh / vw));
+
+    const container = document.querySelector('.video-container');
+    if (!container) return;
+
+    // If the window is smaller than desired, scale down to fit the viewport
+    const scale = Math.min(1, window.innerWidth / desiredW, window.innerHeight / desiredH);
+    const displayW = Math.round(desiredW * scale);
+    const displayH = Math.round(desiredH * scale);
+
+    // Apply sizes directly so preview uses camera resolution when possible
+    video.style.width = displayW + 'px';
+    video.style.height = displayH + 'px';
+    container.style.width = displayW + 'px';
+    container.style.height = displayH + 'px';
+
+    // Ensure the preview is not mirrored and fits the container
+    try {
+        video.style.transform = 'none';
+        video.style.objectFit = 'contain';
+        video.style.margin = '0 auto';
+        video.style.display = 'block';
+    } catch (e) {
+        // ignore
+    }
+    // Monitor for changes in video dimensions (some browsers/devices update after start)
+    (function startVideoMonitor() {
+        let lastW = 0, lastH = 0;
+        const id = setInterval(() => {
+            try {
+                const vw = video.videoWidth || 0;
+                const vh = video.videoHeight || 0;
+                if (vw !== lastW || vh !== lastH) {
+                    lastW = vw; lastH = vh;
+                    try { adjustVideoDisplay(); } catch (e) { /* ignore */ }
+                    try { updateCaptureInfo(); } catch (e) { /* ignore */ }
+                }
+                // stop monitoring when video ended or removed
+                if (!document.body.contains(video) || video.paused && !video.srcObject) {
+                    clearInterval(id);
+                }
+            } catch (e) {
+                // ignore
+            }
+        }, 300);
+    })();
+}
+
+function applyFilterToPreview() {
+    const filter = FILTERS[currentFilterKey] || "none";
+    video.style.filter = filter;
+}
+
+function initFilterButtons() {
+    const buttons = document.querySelectorAll(".filter-btn");
+    if (!buttons.length) return;
+    buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            currentFilterKey = btn.dataset.filter || "none";
+            buttons.forEach((b) => b.classList.remove("is-active"));
+            btn.classList.add("is-active");
+            applyFilterToPreview();
+        });
+    });
+}
+
+initFilterButtons();
+applyFilterToPreview();
+
+document
+    .querySelector("section#Camera .button .autocapture-button button")
+    .addEventListener("click", (e) => {
+        if (auto) {
+            auto = false;
+            autoCapture.innerHTML = "OFF";
+        } else {
+            auto = true;
+            autoCapture.innerHTML = "ON";
+            capturePhotoLoop();
+        }
+    });
+
+async function capturePhotoLoop() {
+    while (auto && photoCount < limit) {
+        await capturePhotoAndSave();
+        if (photoCount < limit) {
+            await new Promise(
+                (resolve) =>
+                    (captureTimeout = setTimeout(
+                        resolve,
+                        timeDiv.innerHTML * 1500
+                    ))
+            );
+        }
+    }
+    if (photoCount >= limit) {
+        stopRecordingAndDownload();
+        auto = false;
+        autoCapture.innerHTML = "OFF";
+    }
+}
+
+// fitur rekam kamera
+navigator.mediaDevices
+    .getUserMedia({
+        video: {
+            // Ask for higher-res stream; devices may clamp to what's supported.
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+        },
+    })
+    .then(function (stream) {
+        cameraStream = stream;
+        videoTrack = stream.getVideoTracks && stream.getVideoTracks().length
+            ? stream.getVideoTracks()[0]
+            : null;
+
+        // Read capabilities (if available) and try to request the highest resolution.
+        videoCaps = null;
+        if (videoTrack && typeof videoTrack.getCapabilities === 'function') {
+            try {
+                videoCaps = videoTrack.getCapabilities();
+            } catch (e) {
+                videoCaps = null;
+            }
+        }
+
+        if (videoTrack && videoCaps && videoCaps.width && videoCaps.height && typeof videoTrack.applyConstraints === 'function') {
+            const maxW = Number(videoCaps.width.max);
+            const maxH = Number(videoCaps.height.max);
+            if (Number.isFinite(maxW) && Number.isFinite(maxH) && maxW > 0 && maxH > 0) {
+                // Use ideal first (more compatible), then fall back silently if rejected.
+                videoTrack.applyConstraints({
+                    width: { ideal: maxW },
+                    height: { ideal: maxH },
+                }).catch(() => {
+                    // ignore
+                });
+            }
+        }
+        if (videoTrack && typeof ImageCapture !== "undefined") {
+            try {
+                imageCapture = new ImageCapture(videoTrack);
+            } catch (e) {
+                imageCapture = null;
+            }
+        }
+        video.srcObject = stream;
+        video.play();
+        updateCaptureInfo();
+
+        // After metadata, videoWidth/videoHeight becomes available.
+        video.addEventListener('loadedmetadata', () => {
+            updateCaptureInfo();
+            // Adjust preview to match camera output resolution where possible
+            try { adjustVideoDisplay(); } catch (e) { /* ignore */ }
+        }, { once: true });
+
+        // Update display when window resized
+        window.addEventListener('resize', () => {
+            try { adjustVideoDisplay(); } catch (e) { /* ignore */ }
+        });
+
+        startRecording(stream);
+        try { startCanvasRenderer(); } catch (e) { /* ignore */ }
+    })
+    .catch(function (err) {
+        console.log("An error occurred: " + err);
+        const el = document.getElementById('capture-info');
+        if (el) el.textContent = 'Camera error: ' + String(err);
+    });
+
+// Tombol kamera diklik
+cameraButton.addEventListener("click", function () {
+    if (!auto) {
+        if (!captured) {
+            captured = true;
+            if (photoCount < limit) {
+                capturePhotoAndSave();
+            } else {
+                stopRecordingAndDownload();
+            }
+        }
+    }
+});
+
+// Function to capture photo and save
+function capturePhotoAndSave() {
+    let time = timeDiv.innerHTML;
+    function countdown() {
+        if (time >= 0) {
+            setTimeout(() => {
+                countdowndisplay.style.display = "flex";
+                countdowndisplay.textContent = time;
+                time--;
+                countdown();
+            }, 1000);
+        } else {
+            countdowndisplay.style.display = "none";
+            countdowndisplay.textContent = "";
+            afterCountDown();
+        }
+    }
+
+    async function afterCountDown() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let bitmap = null;
+        try {
+            bitmap = await captureBestStillBitmap();
+
+            const srcW = bitmap.width;
+            const srcH = bitmap.height;
+
+            // Fit entire source into output (no cropping). Keep aspect ratio and cap width.
+            const outW = Math.max(1, Math.min(MAX_OUTPUT_WIDTH, srcW));
+            const outH = Math.max(1, Math.round((outW * srcH) / srcW));
+            canvas.width = outW;
+            canvas.height = outH;
+
+            ctx.save();
+            ctx.filter = FILTERS[currentFilterKey] || "none";
+            
+            // Apply mirror/flip if enabled
+            if (mirrorDisplay) {
+                ctx.translate(outW, 0);
+                ctx.scale(-1, 1);
+            }
+            
+            // draw the whole bitmap scaled to canvas so nothing is cropped
+            ctx.drawImage(bitmap, 0, 0, srcW, srcH, 0, 0, outW, outH);
+            ctx.filter = "none";
+            ctx.restore();
+
+            updateCaptureInfo({ outputWidth: outW, outputHeight: outH });
+        } catch (e) {
+            console.error("Still capture failed, falling back to video frame", e);
+
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+
+            // Fit entire video frame into output (no cropping). Keep aspect ratio and cap width.
+            const outW = Math.max(1, Math.min(MAX_OUTPUT_WIDTH, videoWidth));
+            const outH = Math.max(1, Math.round((outW * videoHeight) / videoWidth));
+            canvas.width = outW;
+            canvas.height = outH;
+            
+            ctx.save();
+            ctx.filter = FILTERS[currentFilterKey] || "none";
+            
+            // Apply mirror/flip if enabled
+            if (mirrorDisplay) {
+                ctx.translate(outW, 0);
+                ctx.scale(-1, 1);
+            }
+            
+            ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, outW, outH);
+            ctx.filter = "none";
+            ctx.restore();
+
+            updateCaptureInfo({ outputWidth: outW, outputHeight: outH });
+        } finally {
+            if (bitmap && typeof bitmap.close === "function") {
+                try {
+                    bitmap.close();
+                } catch (e) {
+                    // ignore
+                }
+            }
+        }
+
+        // Use JPEG for much smaller files at high resolution.
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        const base64Data = dataUrl.split(",")[1];
+
+        listPhoto.innerHTML =
+            `<div class="photo"><img src="${dataUrl}"></div>` +
+            listPhoto.innerHTML;
+
+        let data;
+        if (request == "photo") {
+            data = {
+                name_photo: `photo_${photoCount}.jpg`,
+                data: base64Data,
+                email: email,
+            };
+        } else if (request == "retake") {
+            data = {
+                name_photo: photoName[photoCount],
+                data: base64Data,
+                email: email,
+            };
+        }
+
+        $.ajaxSetup({
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            },
+        });
+        $.ajax({
+            url: "/save-photo",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (response) {
+                console.log("Response dari server:", response);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            },
+        });
+
+        photoCount++;
+        captured = false;
+    }
+    countdown();
+}
+
+// Canvas renderer: draws video frames into a canvas so we can control mirroring reliably
+function startCanvasRenderer() {
+    const container = document.querySelector('.video-container');
+    if (!container) return;
+    displayCanvas = document.getElementById('video-display-canvas');
+    if (!displayCanvas) {
+        displayCanvas = document.createElement('canvas');
+        displayCanvas.id = 'video-display-canvas';
+        displayCanvas.style.display = 'none';
+        container.appendChild(displayCanvas);
+    }
+    displayCtx = displayCanvas.getContext('2d');
+    // hide native video presentation so user only sees canvas
+    video.style.visibility = 'hidden';
+    displayCanvas.style.display = 'block';
+    displayCanvas.style.position = 'absolute';
+    displayCanvas.style.top = '0';
+    displayCanvas.style.left = '0';
+    displayCanvas.style.width = '100%';
+    displayCanvas.style.height = '100%';
+    displayCanvas.style.zIndex = 15;
+    // wire mirror toggle button if present
+    const mirrorBtn = document.getElementById('mirrorToggle');
+    if (mirrorBtn) {
+        mirrorBtn.addEventListener('click', () => {
+            mirrorDisplay = !mirrorDisplay;
+            mirrorBtn.textContent = mirrorDisplay ? 'Flip: ON' : 'Flip';
+        });
+    }
+    // drawing loop
+    function resizeCanvasToVideo() {
+        const vw = video.videoWidth || video.clientWidth || 640;
+        const vh = video.videoHeight || video.clientHeight || 480;
+        displayCanvas.width = vw;
+        displayCanvas.height = vh;
+        displayCanvas.style.width = (video.style.width || vw + 'px');
+        displayCanvas.style.height = (video.style.height || vh + 'px');
+    }
+
+    function drawFrame() {
+        try {
+            if (video.readyState >= 2) {
+                resizeCanvasToVideo();
+                const w = displayCanvas.width;
+                const h = displayCanvas.height;
+                displayCtx.save();
+                displayCtx.clearRect(0, 0, w, h);
+                if (mirrorDisplay) {
+                    displayCtx.translate(w, 0);
+                    displayCtx.scale(-1, 1);
+                    displayCtx.drawImage(video, 0, 0, w, h);
+                } else {
+                    displayCtx.drawImage(video, 0, 0, w, h);
+                }
+                displayCtx.restore();
+            }
+        } catch (e) {
+            // ignore drawing errors
+        }
+        drawLoopId = requestAnimationFrame(drawFrame);
+    }
+    if (!drawLoopId) drawLoopId = requestAnimationFrame(drawFrame);
+}
+
+function stopCanvasRenderer() {
+    if (drawLoopId) cancelAnimationFrame(drawLoopId);
+    drawLoopId = null;
+    if (displayCanvas) displayCanvas.style.display = 'none';
+    if (video) video.style.visibility = 'visible';
+}
+
+// Function to start recording video
+function startRecording(stream) {
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+
+    mediaRecorder.ondataavailable = function (e) {
+        videoChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = function () {
+        const videoBlob = new Blob(videoChunks, { type: "video/webm" });
+        const formData = new FormData();
+        formData.append("video", videoBlob, "recorded_video.webm");
+        formData.append("email", email);
+        $.ajaxSetup({
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            },
+        });
+        $.ajax({
+            url: "/save-video",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+        URL.revokeObjectURL(recordedVideoUrl);
+    };
+
+    mediaRecorder.start();
+}
+
+// fitur download rekaman, foto
+function stopRecordingAndDownload() {
+    const videoStream = video.srcObject;
+    const tracks = videoStream.getTracks();
+
+    tracks.forEach((track) => track.stop());
+
+    window.location.href = "/listphoto";
+}
+
+const template = document.querySelector("section#Photos");
+let isDown = false;
+let startY;
+let scrollTop;
+
+template.addEventListener("mousedown", (e) => {
+    if (e.target.closest("button, a, input, select, textarea, label, form")) return;
+    isDown = true;
+    template.classList.add("active");
+    startY = e.pageY - template.offsetTop;
+    scrollTop = template.scrollTop;
+    console.log("Mouse down: startY =", startY, "scrollTop =", scrollTop);
+});
+
+template.addEventListener("mouseleave", () => {
+    isDown = false;
+    template.classList.remove("active");
+    console.log("Mouse leave");
+});
+
+template.addEventListener("mouseup", () => {
+    isDown = false;
+    template.classList.remove("active");
+    console.log("Mouse up");
+});
+
+template.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const y = e.pageY - template.offsetTop;
+    const walk = (y - startY) * 2;
+    template.scrollTop = scrollTop - walk;
+    console.log(
+        "Mouse move: x =",
+        y,
+        "walk =",
+        walk,
+        "scrollLeft =",
+        template.scrollTop
+    );
+});

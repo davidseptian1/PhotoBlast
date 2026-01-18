@@ -9,7 +9,6 @@
 
 # Official Mailjet PHP Wrapper
 
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/3fa729f3750849ce8e0471b0487439cb)](https://www.codacy.com/app/gbadi/mailjet-apiv3-php)
 [![Build Status](https://travis-ci.org/mailjet/mailjet-apiv3-php.svg?branch=master)](https://travis-ci.org/mailjet/mailjet-apiv3-php)
 ![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)
 ![Current Version](https://img.shields.io/badge/version-1.4.1-green.svg)
@@ -57,7 +56,9 @@ This library requires **PHP v8.1** or higher.
 
 Use the below code to install the wrapper:
 
-`composer require mailjet/mailjet-apiv3-php`
+```bash
+composer require mailjet/mailjet-apiv3-php
+```
 
 If you are not using [Composer](https://getcomposer.org/), clone or download [this repository](https://github.com/mailjet/mailjet-apiv3-php-no-composer) that already contains all the dependencies and the `vendor/autoload.php` file. If you encounter an issue, please post it here and not on the mirror repository.
 
@@ -447,6 +448,200 @@ $body = [
 ];
 $response = $mj->post(Resources::$SmsSend, ['body' => $body]);
 $response->success() && var_dump($response->getData());
+```
+
+
+### Send request with supporting emojis in the subject
+
+```php
+require 'vendor/autoload.php';
+
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxx',
+    'xxx',
+    true,
+);
+
+try {
+    $subject = \Mailjet\Utility\StringUtility::utfStringNotation("This is subject with emoji  🤑" );
+
+    $body = [
+        'Locale' => "en_US",
+        'Sender' => "sender@gmail.com",
+        'SenderEmail' => "sender@gmail.com",
+        'Subject' => $subject,
+        'TemplateID' => 12345,
+        'ContactsListID' => 12345,
+        'Title' => "Emoji Test" . time(),
+
+    ];
+    $response = $mj->post(
+        Resources::$Campaigndraft,
+        [
+            'body' => $body,
+        ]
+    );
+    print_r($response->getData());
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+```
+
+### Get Campaigns with filters
+
+```php
+require 'vendor/autoload.php';
+
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxx',
+    'yyy',
+    true,
+    ['version' => 'v3']
+);
+try {
+    //Note: If no query parameters are used, only campaigns sent since 00:00 UTC on the current day will be returned.
+    $filters = [
+        'period' => 'Year',
+    ];
+    $response = $mj->get(Resources::$Campaign, ['filters' => $filters]);
+    print_r($response->getBody());
+
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+```
+
+### Get ESP statistics
+
+```php
+require 'vendor/autoload.php';
+
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxxx',
+    'yyyy',
+    true,
+    ['version' => 'v3']
+);
+try {
+    $filters = [
+        'CampaignID' => 123456,
+    ];
+    $response = $mj->get(Resources::$Useragentstatistics, ['filters' => $filters]);
+    print_r($response->getBody());
+
+
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+```
+
+### Get Campaign overview
+
+```php
+require 'vendor/autoload.php';
+
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxx',
+    'yyy',
+    true,
+    ['version' => 'v3']
+);
+try {
+    $response = $mj->get(Resources::$Campaignoverview);
+    print_r($response->getBody());
+
+
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+```
+
+### Introducing DTOs
+We adding DTOs for better developer experience with working on data. This is the example of how to use it:
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Mailjet\Model\MailjetCampaignDataDTO;
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxx',
+    'xxx',
+    true,
+    ['version' => 'v3']
+);
+try {
+    $filters = [
+        'period' => 'Month',
+        'Limit' => 10,
+    ];
+    $response = $mj->get(Resources::$Campaigndraft + ['model' => MailjetCampaignDataDTO::class], ['filters' => $filters]);
+
+    foreach ($response->getData() as $campaign) {
+        /** @var MailjetCampaignDataDTO $campaign */
+        print_r($campaign);
+    }
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+```
+### Create Template via API
+
+#### Important note. Do not use MJML Content. It does not recognize it.
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Mailjet\Model\MailjetCampaignDataDTO;
+use \Mailjet\Resources;
+
+$mj = new \Mailjet\Client(
+    'xxx',
+    'xxx',
+    true,
+    ['version' => 'v3']
+);
+try {
+    $body = [
+        'Author' => "John Doe",
+        'Copyright' => "Mailjet",
+        'Description' => "Used to send out promo codes.",
+        'EditMode' => 2,
+        'IsStarred' => false,
+        'IsTextPartGenerationEnabled' => true,
+        'Locale' => "en_US",
+        'Name' => sprintf('test-%s-%s', time(), __FILE__),
+        'OwnerType' => "user",
+        'Presets' => "string",
+        'Purposes' => ["marketing"],
+    ];
+    $response = $mj->post(Resources::$Template, ['body' => $body]);
+    $id = $response->getData()[0]['ID'];
+    if ($id) {
+        $body = [
+            'Headers' => "",
+            'Html-part' => "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!",
+            'MJMLContent' => "",
+            'Text-part' => "Dear passenger, welcome to Mailjet! May the delivery force be with you!"
+        ];
+
+        $r = $mj->post(Resources::$TemplateDetailcontent, ['id' => $id, 'body' => $body]);
+    }
+} catch (Throwable $throwable) {
+    print_r($throwable->getMessage());
+}
+
 ```
 
 ## Contribute

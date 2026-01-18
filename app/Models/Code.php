@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Code extends Model
 {
     use HasFactory;
-    protected $fillable = ['code', 'status'];
+    protected $fillable = ['code', 'status', 'transaction_id'];
     protected $with = ['transaction'];
 
     public function transaction(){

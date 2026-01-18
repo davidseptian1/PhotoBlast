@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" class=" kiosk-fullscreen ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photochika</title>
+  <meta name="theme-color" content="#6777ef">
+  <link rel="apple-touch-icon" href="http://127.0.0.1:8000/logo.png">
+  <link rel="manifest" href="http://127.0.0.1:8000/manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+      <link rel="stylesheet" href="http://127.0.0.1:8000/vendor/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="http://127.0.0.1:8000/css/camera.css">
+    <script src="http://127.0.0.1:8000/js/jquery.min.js"></script>
+    <script src="http://127.0.0.1:8000/js/jszip.min.js"></script>
+    <meta name="csrf-token" content="xxNpkHOrjOJe2OQqP4RdIGMJclcnrW6szpg75SFL">
+        <style>
+      .pb-progress-stepper {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      }
+      .pb-progress-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .pb-progress-step-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.08);
+        border: 2px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.4);
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+      .pb-progress-step.is-active .pb-progress-step-icon {
+        background: linear-gradient(135deg, rgba(249,115,22,0.95), rgba(234,88,12,0.95));
+        border-color: rgba(249,115,22,0.95);
+        color: #fff;
+        box-shadow: 0 0 16px rgba(249,115,22,0.5);
+      }
+      .pb-progress-step.is-done .pb-progress-step-icon {
+        background: rgba(34,197,94,0.9);
+        border-color: rgba(34,197,94,0.95);
+        color: #fff;
+      }
+      .pb-progress-step-label {
+        color: rgba(255,255,255,0.5);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        display: none;
+      }
+      .pb-progress-step.is-active .pb-progress-step-label {
+        color: rgba(255,255,255,0.95);
+        font-weight: 600;
+        display: inline;
+      }
+      .pb-progress-step.is-done .pb-progress-step-label {
+        color: rgba(255,255,255,0.65);
+      }
+      .pb-progress-divider {
+        width: 16px;
+        height: 2px;
+        background: rgba(255,255,255,0.15);
+        transition: all 0.3s ease;
+      }
+      .pb-progress-step.is-done ~ .pb-progress-divider {
+        background: rgba(34,197,94,0.5);
+      }
+      .pb-progress-step.is-active ~ .pb-progress-divider {
+        background: rgba(249,115,22,0.4);
+      }
+      @media (min-width: 769px) {
+        .pb-progress-stepper { 
+          padding: 10px 18px; 
+          gap: 6px;
+        }
+        .pb-progress-step-icon { 
+          width: 34px; 
+          height: 34px; 
+          font-size: 15px; 
+        }
+        .pb-progress-step-label { 
+          display: inline;
+          font-size: 12px; 
+        }
+        .pb-progress-divider { 
+          width: 20px; 
+        }
+      }
+      @media (max-width: 480px) {
+        .pb-progress-stepper { 
+          padding: 6px 12px; 
+          gap: 3px;
+          top: 8px;
+        }
+        .pb-progress-step-icon { 
+          width: 28px; 
+          height: 28px; 
+          font-size: 12px; 
+        }
+        .pb-progress-divider { 
+          width: 12px; 
+        }
+      }
+    </style>
+        <link rel="preload" as="image" href="/img/logostart.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/img/logosetelahstart.jpg">
+    <link rel="preload" as="image" href="/img/bgpembayaran.jpg">
+    <link rel="preload" as="image" href="/img/bgsukses.jpg">
+    <link rel="preload" as="image" href="/img/redeemcode.jpg">
+    <link rel="preload" as="image" href="/img/pilihanlayout.jpg">
+    <link rel="preload" as="image" href="/img/bgkamera.png">
+  
+  </head>
+<body class=" kiosk-fullscreen ">
+  
+          <div class="pb-progress-stepper" aria-label="Progress">
+      <div class="pb-progress-step is-active is-done">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <div class="pb-progress-step-label">Layout</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step is-active ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-camera"></i>
+        </div>
+        <div class="pb-progress-step-label">Foto</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step  ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-image"></i>
+        </div>
+        <div class="pb-progress-step-label">Frame</div>
+      </div>
+      <div class="pb-progress-divider"></div>
+      <div class="pb-progress-step ">
+        <div class="pb-progress-step-icon">
+          <i class="fas fa-print"></i>
+        </div>
+        <div class="pb-progress-step-label">Print</div>
+      </div>
+    </div>
+  
+      <style>
+      .pb-flow-timer { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 18px; background: rgba(0,0,0,0.62); border: 1px solid rgba(255,255,255,0.24); color: #fff; font-family: 'Poppins', sans-serif; font-size: 18px; line-height: 1; box-shadow: 0 12px 34px rgba(0,0,0,0.42); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .pb-flow-timer .label { opacity: 0.95; font-weight: 600; }
+      .pb-flow-timer .time { font-weight: 900; letter-spacing: 1px; min-width: 78px; text-align: right; font-size: 22px; }
+      .pb-flow-timer.is-danger { background: rgba(220, 38, 38, 0.72); border-color: rgba(255,255,255,0.32); }
+      @media (max-width: 520px) {
+        .pb-flow-timer { top: 10px; right: 10px; padding: 12px 14px; font-size: 16px; }
+        .pb-flow-timer .time { font-size: 20px; min-width: 72px; }
+      }
+    </style>
+    <div class="pb-flow-timer" id="pb-flow-timer" data-deadline="1768705185" aria-label="Sisa waktu sesi">
+      <span class="label">Sisa waktu</span>
+      <span class="time" id="pb-flow-countdown">08:00</span>
+    </div>
+    <script>
+      (function(){
+        try {
+          var el = document.getElementById('pb-flow-timer');
+          if (!el) return;
+          var deadline = parseInt(el.getAttribute('data-deadline') || '0', 10) * 1000;
+          if (!deadline) return;
+
+          var out = document.getElementById('pb-flow-countdown');
+          var timeoutUrl = "http://127.0.0.1:8000/timeout";
+          var redirected = false;
+          var intervalId = null;
+
+          function pad2(n){ return (n < 10 ? '0' : '') + n; }
+          function tick(){
+            var msLeft = deadline - Date.now();
+            var secLeft = Math.max(0, Math.floor(msLeft / 1000));
+            var m = Math.floor(secLeft / 60);
+            var s = secLeft % 60;
+            if (out) out.textContent = pad2(m) + ':' + pad2(s);
+
+            if (secLeft <= 30) el.classList.add('is-danger');
+            if (secLeft <= 0) {
+              if (redirected) return;
+              redirected = true;
+              try { if (intervalId) clearInterval(intervalId); } catch (e) {}
+              // replace() avoids bouncing back, and cache-busting avoids any weird reload behavior
+              window.location.replace(timeoutUrl + '?ts=' + Date.now());
+              return;
+            }
+          }
+
+          tick();
+          intervalId = setInterval(tick, 250);
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
+  
+  <section id="content" style="background-image: url('/storage/backgrounds/global/eGKFBPcNejXm1CYzikmw7Y9jvMO7xPjVp81lhNDw.png');">
+  <nav>
+  <h1>Photochika</h1>
+  
+</nav>  <style>
+    /* Ensure video preview is not mirrored and fits its container */
+    .video-container { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .video-container video,
+    .video-container canvas { position:absolute; top:0; left:0; width:100%; height:100%; transform: none !important; -webkit-transform: none !important; object-fit: contain; max-width:100%; display:block; }
+
+    /* Tidy camera control buttons */
+    .button { display:flex; gap:18px; align-items:center; justify-content:center; }
+    .button .timer-button, .button .autocapture-button { display:flex; flex-direction:column; align-items:center; }
+    /* Button sizes are handled in public/css/camera.css for consistency */
+  </style>
+  <section id="Camera">
+    <section id="Photos">      <a href="http://127.0.0.1:8000/tempcollage" class="back-layout-btn">
+        <i class="fas fa-arrow-left"></i> Kembali ke Layout
+      </a>
+      <div class="filter-panel" aria-label="Filter">
+        <div class="filter-title">Filter</div>
+        <select id="cameraFilterSelect" class="formbutton" style="padding:8px 10px; border-radius: 12px; min-width: unset; width:100%; background: rgba(255,255,255,0.08); color:#fff; border:2px solid rgba(255,255,255,0.28);">
+          <option value="none" style="background:#0b1220; color:#fff;">NO FILTER</option>
+          <option value="bw" style="background:#0b1220; color:#fff;">B&W</option>
+          <option value="sepia" style="background:#0b1220; color:#fff;">SEPIA</option>
+          <option value="vintage" style="background:#0b1220; color:#fff;">VINTAGE</option>
+          <option value="soft" style="background:#0b1220; color:#fff;">SOFT</option>
+          <option value="noir" style="background:#0b1220; color:#fff;">NOIR</option>
+          <option value="vivid" style="background:#0b1220; color:#fff;">VIVID</option>
+        </select>
+      </div>
+      <div id="capture-info" aria-label="Capture info" style="margin-top:10px; padding:10px 12px; border-radius:14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22); color:#fff; font-size:12px; line-height:1.35; text-shadow: 0 2px 10px rgba(0,0,0,0.55);">
+        Loading camera info...
+      </div>
+
+      <div id="PhotoList" aria-label="Captured photos"></div>
+    </section>
+    <div class="video-container">
+      <video id="video" class=" watch-video"></video>
+      <canvas id="video-display-canvas" style="display:none;"></canvas>
+      <div style="position:absolute; right:16px; top:12px; z-index:50;">
+        <button id="mirrorToggle" class="flip-btn">
+          <i class="fas fa-sync-alt"></i>
+          <span>Flip</span>
+        </button>
+      </div>
+      <div id="countdown-display"></div>
+
+      <div class="button">
+        <div class="timer-button">
+          <button>
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 80 80" fill="none" style="margin-top: 7px;">
+                <rect width="105" height="100" fill="url(#pattern0_108_25)"/>
+                <defs>
+                <pattern id="pattern0_108_25" patternContentUnits="objectBoundingBox" width="10" height="10">
+                <use xlink:href="#image0_108_25" transform="scale(0.015)"/>
+                </pattern>
+                <image id="image0_108_25" width="50" height="50" xlink:href="data:image/png;base64,iVBORW0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAE+UlEQVR4nO2aa4hVVRTHx1FnGoPMXpZa2QQllkEPeiiWVFBRVhY90B5kU0FJKmoPelDRl7Q+lRRRH6svgdFLQ4tyKFKappxKK2/0ULOcLMqc1JFfrMt/y/J0z5lzzzn3egP/cGD2a+39n73X2mutfZua9qO2AM4A3gU2AW8C4+o18SHAlcCTwFvAOmArsAPYDvwEfA68DTwCXAQMj5E1BviDvbEBOLhWiz8AuBFYDuymMnbqi2t7DbgcGOLkzlb7EmAU0KnydUUTaAPma9sD/gReB+YCFwBHAy1uzFDgGLXNU99tbvxG4DZgMLBIdfM11nbZMK9IEpcB37kFrARmAMNi+huBoTFtBwLTgQ+dvC+A9yJE9iJWxC487yb8CJjs2puBicDD0oOS9MMfo/Vqewg4Bxjkxk8GVkWOXrFEgKOAbgn7C7jdFu6U3Bb/PdXDxjxoMiRrkGRvK5wI0K7/btj2shkEWrUII5YXJuN+kynZJwBfFUZEO1FyulA2f8Apmqho9AATNMcI4NzcRKQT4TiZ+WtT/bW6FwaEk1UNtgNXRdaSi0hQ7C/dTnQk3BdZiLwMnAWcHvlOjRiCQOTFLCYWKd141V1TDYmURG5OuZ5F6m/zT6zmSIV74k7VnQz8XQ2JlET6gE9SfJsjetSShojd2IbVuhtaZK2oAZGsmJ3Gdwpux4WquzfrbAUT2ehclfXhHosjYg6gYZXKwyt4ofuCyG7ziCXrY9VNTSJiXqxhZt7dqMGO3CdZN6i8LI6EuRr9suMHyV34uoGIlNwpCaHBf+MTYJoGLFf5tLwzF0wEd+tb5Ej04gyTBUV6QOUFNB6RBZJnEabhiUpELDzdo0TAqw1I5CXJuzpWT4Bv1HiiynbxNBqRNZI3XuV1lYj0qjHEBr81IJHNkjdS5d8rEQnRXPn6j0R3WbDCyV5BMfjHxUKGnfUg0u5kH08x6HMeyB5icUfr0Eg5C372CQdlVIrAr5J3uMpbkpT9JJW7c5AI4fAQkVhaEJEuyZ2QpOyWljRMU/mVnCTGqUwNze8bSRfioyrf3WAkDHdJ/uPlEiysRMTytoaVEVvdKCT8HWc5tcoesLIW/XLGDlPdZzQOiS7NcQSwS1/FJLh1ekeDZqk8q0FI+LA7HPmlFUlEfP0eufHDgF+Ix9N1IrFJd0ezsjqG6WlD3WC97hhgkmdqTMLQEbFWG0JWMomMpfwNa5V4aHbKtS/QqTW0ukBvTiIJlw4qRWKTsXp9qjd67U1Fa7BEueFbOzkDEtGgSzXILNjZqjvffJs6kugDpmjuSbJShotTkXBkntPAH4DRqruiTmT6bC73nmjvj4bFVZFwim9ZPsMaF6dMyelQDoQtwHkuIdLjEobJCp5A5kglw5DAsDPmCH5QAxLvu/zVGJfhNL0YmYlE5KEnkLEtnqR6u2ducdueBz9aQhtl4PUMZyYWzX1cLhKRnemS4F3KYpQth0x0R0YTbWNudcFcG/CYU+zVuXciRmeedYuw7b7enpNdn7Fa2Auy/yWZ7a36u1NtM4Fj3bjBet0tOfmLM+tESkKXuKOGAjLLgY3KIGs0cI8L6sI/qDoTm3N35ipD7hPNnwJPKRl+pvRrhL521d2kPt2RhyOTNSf1ZVcwoVY5mssUAlSLfoXBM2p6jKqBJZT1m5KFFoLKV+tVNmaH/l6rn25Yn6mx8cR+NP3/8S83clOkQWfgVQAAAABJRU5ErkJggg=="/>
+                </defs>
+                </svg>
+            </button>
+            <div class="time"><span class="value">3</span><span>S</span></div>
+          </div>
+          <button class="camera-button">
+            <div class="circle"></div>
+          </button>
+          <div class="autocapture-button">
+            <button>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 80 80" fill="none">
+                  <rect width="105" height="100" fill="url(#pattern0_108_41)"/>
+                  <defs>
+                  <pattern id="pattern0_108_41" patternContentUnits="objectBoundingBox" width="10" height="10">
+                  <use xlink:href="#image0_108_41" transform="scale(0.015)"/>
+                  </pattern>
+                  <image id="image0_108_41" width="50" height="50" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAABy0lEQVR4nO3ZP2sUQRzG8SEWCTYSiG2CltoEbe1Ma+e/V6CIL8BOW1vtfAFa2FqZQonaprSUBLRSjGnkDN7xkeN+R9aQrGd273Y3zLdcbpnny8xzdzOTUiaTyWQmBMt4iE94k7oE5nELrzGwTzdEcAGP8bUQ/hde4hpOpbaCM7iDD/7mIx5gKbUVzOEqnqNXCP8dT7Ha6t7YD7BVCD+ILgw7Md/a3hgFuIFX+F0I8Dn6cK7VvVEhQOO9wSLuY/NAgM14vjiN3hiNew8321Dc/+qN0bhreFEYd6+KyEaNxd0KqeWSd1fwCNsOoYrImNIA8dnVmKXhbI3pxWwOZ3XuiPcWcBvrB8TrF5lGcXExvjC+lYWfmkis3yt4hp+FcX7Es0vHEG9EZKOG4mqDyJhKxW2NSPr3L32/LoGZieAsnmDHFEkzECn2ptMi/ZMiMhNSFgnyjNRMyksryEurZlJeWu1aWv2TMiNvuy6yE39Il7ooMohd5HA3efrYAoWA7/FuhiLbsRlbqRx+Arm6RZq5WlCfSLNXC6qJ7MZJy+VGwk/am5Lirsch3EJqMw7nSxzAnU9dAXsRvhfnV2tHHZG2GlzH3bKrhUwmkxrlDz4vQSEyTTDtAAAAAElFTkSuQmCC"/>
+                  </defs>
+                  </svg>
+            </button>
+            <div class="status"><span class="value">OFF</span></div>
+          </div>
+        </div>
+    </div>
+  </section>
+</section>
+  <script>
+    const email = "davidseptian0409@gmail.com";
+    const limit = 2
+    var photoName = [];
+    const request = "photo"
+  </script>
+  <script>
+    // Ensure preview is never mirrored. Inject a high-specificity rule.
+    (function(){
+      try{
+        const css = 'video.watch-video, #video.watch-video, .video-container video { -webkit-transform: none !important; transform: none !important; }';
+        const st = document.createElement('style');
+        st.setAttribute('data-pb-force', 'unmirror');
+        st.appendChild(document.createTextNode(css));
+        document.head.appendChild(st);
+        // also set inline styles on the element if present later
+        function ensureVideoUnmirrored(){
+          const v = document.querySelector('video.watch-video');
+          if (v) {
+            v.style.webkitTransform = 'none';
+            v.style.transform = 'none';
+            v.style.objectFit = 'contain';
+          }
+        }
+        window.addEventListener('load', ensureVideoUnmirrored);
+        setTimeout(ensureVideoUnmirrored, 500);
+        const obs = new MutationObserver(ensureVideoUnmirrored);
+        obs.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      }catch(e){/* ignore */}
+    })();
+  </script>
+  <script src="http://127.0.0.1:8000/js/camera.js?v=1768702212"></script>
+  
+    <script src="http://127.0.0.1:8000/sw.js"></script>
+  <script>  
+    if(!navigator.serviceWorker.controller) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg){
+        console.log('Service worker has been registered for scope: ' + reg.scope);
+      })
+    }
+  </script>
+</body>
+</html>
