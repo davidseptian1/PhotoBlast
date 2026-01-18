@@ -55,7 +55,7 @@
       @endforeach
     </h1>
     <p style="font-size: 18px; margin-bottom: 24px; text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 4px 24px rgba(0,0,0,0.7); color: #ffffff; font-weight: 600;">Pilih paket, bayar, dan dapatkan kode redeem untuk mulai mengambil foto.</p>
-    <form method="POST" action="{{ route('flow.begin') }}" style="margin-top:20px;">
+    <form method="POST" action="{{ route('flow.begin') }}" style="margin-top:20px;" onsubmit="sessionStorage.clear();">
       @csrf
       <button type="submit" class="btn primary btn-start-enhanced">
         <span class="btn-text">Start</span>

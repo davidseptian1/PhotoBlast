@@ -98,9 +98,22 @@
     var countdown = 5;
     var timer = null;
 
-    // Show popup and backdrop on page load
-    popup.style.display = 'flex';
-    backdrop.style.display = 'block';
+    // Check if popup has already been shown in this session
+    var popupShown = sessionStorage.getItem('paymentPopupShown');
+    
+    // Only show popup if it hasn't been shown yet in this session
+    if (!popupShown) {
+      popup.style.display = 'flex';
+      backdrop.style.display = 'block';
+      
+      // Mark popup as shown in this session
+      sessionStorage.setItem('paymentPopupShown', 'true');
+    } else {
+      // If already shown, keep popup hidden
+      popup.style.display = 'none';
+      backdrop.style.display = 'none';
+      return; // Exit early, no need to set up countdown
+    }
 
     function updateCountdown() {
       countdown--;
