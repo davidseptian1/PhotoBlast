@@ -49,15 +49,18 @@
 
   <div class="card" id="pbStartCard" style="opacity:0; pointer-events:none;">
     @php($welcomeText = 'Welcome to Photochika')
-    <h1 class="wave-text" aria-label="{{ $welcomeText }}">
+    <h1 class="wave-text" aria-label="{{ $welcomeText }}" style="color: #ffffff; font-size: 56px; font-weight: 900; letter-spacing: 8px; margin-bottom: 20px; text-transform: uppercase; text-shadow: 0 4px 16px rgba(0,0,0,0.9), 0 8px 32px rgba(0,0,0,0.7), 0 0 40px rgba(249,115,22,0.5), 0 2px 4px rgba(0,0,0,1); white-space: nowrap;">
       @foreach(preg_split('//u', $welcomeText, -1, PREG_SPLIT_NO_EMPTY) as $i => $ch)
         <span class="wave-char" style="--i: {{ $i }}">@if($ch === ' ')&nbsp;@else{{ $ch }}@endif</span>
       @endforeach
     </h1>
-    <p>Pilih paket, bayar, dan dapatkan kode redeem untuk mulai mengambil foto.</p>
-    <form method="POST" action="{{ route('flow.begin') }}" style="margin-top:16px;">
+    <p style="font-size: 18px; margin-bottom: 24px; text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 4px 24px rgba(0,0,0,0.7); color: #ffffff; font-weight: 600;">Pilih paket, bayar, dan dapatkan kode redeem untuk mulai mengambil foto.</p>
+    <form method="POST" action="{{ route('flow.begin') }}" style="margin-top:20px;">
       @csrf
-      <button type="submit" class="btn primary">Start</button>
+      <button type="submit" class="btn primary btn-start-enhanced">
+        <span class="btn-text">Start</span>
+        <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
+      </button>
     </form>
   </div>
 
