@@ -92,6 +92,9 @@
                   <button id="globalZoomInBtn" class="formbutton" type="button" style="padding:6px 10px; border-radius: 12px; min-width: unset;">+</button>
                 </div>
                 <div class="pb-preview-label">View: <span id="globalZoomPct">100%</span></div>
+                <div class="pb-zoom-indicator" role="progressbar" aria-label="Preview zoom indicator" aria-valuemin="50" aria-valuemax="250" style="width:100%; height:8px; background: rgba(255,255,255,0.12); border-radius: 999px; overflow:hidden; border: 1px solid rgba(255,255,255,0.18);">
+                  <span id="globalZoomIndicator" style="display:block; height:100%; width:50%; background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(249,115,22,0.95));"></span>
+                </div>
 
                 <div style="width:100%; height:1px; background: rgba(255,255,255,0.12); margin: 2px 0;"></div>
                 <div class="pb-preview-label">Selected Photo</div>
@@ -101,7 +104,9 @@
                   <button id="zoomInBtn" class="formbutton" type="button" style="padding:6px 10px; border-radius: 12px; min-width: unset;">+</button>
                 </div>
                 <div class="pb-preview-label">Zoom: <span id="zoomPct">100%</span></div>
-                <button id="rotateSelectedBtn" class="formbutton" type="button" style="padding:8px 10px; border-radius: 12px; min-width: unset; width:100%;">ROTATE</button>
+                <div class="pb-zoom-indicator" role="progressbar" aria-label="Selected photo zoom indicator" aria-valuemin="20" aria-valuemax="300" style="width:100%; height:8px; background: rgba(255,255,255,0.12); border-radius: 999px; overflow:hidden; border: 1px solid rgba(255,255,255,0.18);">
+                  <span id="zoomIndicator" style="display:block; height:100%; width:33%; background: linear-gradient(90deg, rgba(34,197,94,0.95), rgba(59,130,246,0.95));"></span>
+                </div>
 
                 <div class="pb-preview-label" @if(Request::routeIs('list-photo')) style="display:none;" @endif>Filter</div>
                 <select id="filterSelect" class="formbutton" @if(Request::routeIs('list-photo')) style="display:none;" @else style="padding:8px 10px; border-radius: 12px; min-width: unset; width:100%; background: rgba(255,255,255,0.08); color:#fff; border:2px solid rgba(255,255,255,0.28);" @endif>
@@ -142,7 +147,7 @@
                   <button id="stickerSizeUpBtn" type="button" class="formbutton" style="padding:6px 10px; border-radius:12px; min-width: unset;">+</button>
                 </div>
 
-                <button id="swapModeBtn" class="formbutton" type="button" style="padding:8px 10px; border-radius: 12px; min-width: unset;">MOVE</button>
+                <button id="swapModeBtn" class="formbutton" type="button" style="padding:12px 14px; border-radius: 14px; min-width: unset; font-size: 16px; letter-spacing: 0.3px;">MOVE</button>
                 <div style="color:#cfd4da; font-size:11px; opacity:0.85; text-align:center; line-height:1.25;">
                   Pilih foto di bawah, klik <b>MOVE</b>, lalu klik slot di preview
                 </div>
@@ -1459,7 +1464,7 @@
           const zoomInBtn = document.getElementById('zoomInBtn');
           const resetZoomBtn = document.getElementById('resetZoomBtn');
           const zoomPct = document.getElementById('zoomPct');
-          const rotateSelectedBtn = document.getElementById('rotateSelectedBtn');
+          const zoomIndicator = document.getElementById('zoomIndicator');
           const swapModeBtn = document.getElementById('swapModeBtn');
           const retakeForm = document.getElementById('retakeForm');
           const filterSelect = document.getElementById('filterSelect');
@@ -1472,6 +1477,7 @@
           const globalZoomInBtn = document.getElementById('globalZoomInBtn');
           const globalResetZoomBtn = document.getElementById('globalResetZoomBtn');
           const globalZoomPct = document.getElementById('globalZoomPct');
+          const globalZoomIndicator = document.getElementById('globalZoomIndicator');
 
           let swapMode = false;
 
@@ -1660,14 +1666,29 @@
             }
           }
 
+          function __updateZoomIndicator(indicatorEl, min, max, scale) {
+            if (!indicatorEl) return;
+            const clamped = __clamp(scale, min, max);
+            const pct = ((clamped - min) / (max - min)) * 100;
+            indicatorEl.style.width = Math.max(0, Math.min(100, pct)) + '%';
+            if (indicatorEl.parentElement) {
+              indicatorEl.parentElement.setAttribute('aria-valuenow', String(Math.round(clamped * 100)));
+            }
+            indicatorEl.setAttribute('title', Math.round(clamped * 100) + '%');
+          }
+
           function refreshZoomLabel() {
             if (!zoomPct) return;
-            zoomPct.textContent = Math.round(getPhotoUserScale(previewSelectedPhotoSrc) * 100) + '%';
+            const scale = getPhotoUserScale(previewSelectedPhotoSrc);
+            zoomPct.textContent = Math.round(scale * 100) + '%';
+            __updateZoomIndicator(zoomIndicator, 0.2, 3.0, scale);
           }
 
           function refreshGlobalZoomLabel() {
             if (!globalZoomPct) return;
-            globalZoomPct.textContent = Math.round(__clamp(previewViewScale, 0.5, 2.5) * 100) + '%';
+            const scale = __clamp(previewViewScale, 0.5, 2.5);
+            globalZoomPct.textContent = Math.round(scale * 100) + '%';
+            __updateZoomIndicator(globalZoomIndicator, 0.5, 2.5, scale);
           }
 
           function applyGlobalZoom(action) {
@@ -1922,40 +1943,6 @@
             });
           }
 
-          // Global rotate button: rotates selected photo
-          if (rotateSelectedBtn) {
-            rotateSelectedBtn.addEventListener('click', () => {
-              const src = previewSelectedPhotoSrc;
-              if (!src || !window.PB_ROTATE) return;
-              const getDeg = window.PB_ROTATE.getDeg;
-              const setDeg = window.PB_ROTATE.setDeg;
-              const applyRotationToImg = window.PB_ROTATE.applyRotationToImg;
-              const normalizeKey = window.PB_ROTATE.normalizePhotoKey;
-              if (typeof getDeg !== 'function' || typeof setDeg !== 'function') return;
-
-              const next = (typeof window.PB_ROTATE.normalizeDeg === 'function')
-                ? window.PB_ROTATE.normalizeDeg(getDeg(src) + 90)
-                : ((getDeg(src) + 90) % 360);
-              setDeg(src, next);
-
-              // Update thumbnail rotation immediately
-              const selectedKey = (typeof normalizeKey === 'function') ? normalizeKey(src) : normalizePhotoKeyForZoom(src);
-              document.querySelectorAll('img.rotatable-photo[data-rotate-src]').forEach((img) => {
-                const k = (typeof normalizeKey === 'function') ? normalizeKey(img.getAttribute('data-rotate-src')) : normalizePhotoKeyForZoom(img.getAttribute('data-rotate-src'));
-                if (k && selectedKey && k === selectedKey && typeof applyRotationToImg === 'function') {
-                  applyRotationToImg(img, next);
-                }
-              });
-
-              try {
-                window.dispatchEvent(new CustomEvent('pb:rotate-changed', { detail: { photoSrc: src, deg: next } }));
-              } catch (e) {
-                // ignore
-              }
-
-              scheduleRenderPreview();
-            });
-          }
         })();
       </script>
     @elseif(Request::routeIs('print-photo'))

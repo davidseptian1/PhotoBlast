@@ -332,6 +332,8 @@ PS;
                 $img = new \Imagick();
                 $img->readImageBlob($binary);
                 $img->setImageColorspace(\Imagick::COLORSPACE_SRGB);
+                $img->setImageResolution(300, 300);
+                $img->setImageUnits(\Imagick::RESOLUTION_PIXELSPERINCH);
                 $img->setImageInterlaceScheme(\Imagick::INTERLACE_JPEG);
                 $img->setImageCompression(\Imagick::COMPRESSION_JPEG);
                 $img->setImageCompressionQuality(95);
@@ -362,6 +364,9 @@ PS;
                         [0.0, -0.7, 0.0],
                     ];
                     @imageconvolution($im, $matrix, 1.0, 0.0);
+                    if (function_exists('imageresolution')) {
+                        @imageresolution($im, 300, 300);
+                    }
                     ob_start();
                     imagejpeg($im, null, 95);
                     $out = (string) ob_get_clean();
