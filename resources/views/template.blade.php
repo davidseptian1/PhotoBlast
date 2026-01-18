@@ -27,8 +27,8 @@
   </div>
 
   <div class="card">
-    <h1>Pilih Layout</h1>
-    <p>Pilih layout foto yang kamu mau. Setting ini akan dipakai sampai cetak.</p>
+    <h1 style="background: linear-gradient(135deg, #fff 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 32px; margin-bottom: 8px;">PILIH LAYOUT</h1>
+    <p style="font-size: 16px;">Pilih layout foto yang kamu mau. Setting ini akan dipakai sampai cetak.</p>
 
     @if(session('message'))
       <p style="padding: 10px 12px; border: 1px solid rgba(255,255,255,0.35); border-radius: 10px; margin-top: 12px; color:#fff; background: rgba(0,0,0,0.18);">
@@ -72,9 +72,14 @@
           </div>
           <div class="layout-title">Layout 1</div>
           <div class="layout-sub">1 foto</div>
+          <div class="layout-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Melanjutkan</span>
+          </div>
           @if(count($framesByLayout['layout1'] ?? []) > 0)
             <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout1" title="Preview Frames">
-              <i class="fas fa-eye"></i> Preview Frames ({{ count($framesByLayout['layout1']) }})
+              <span class="preview-badge">VIEW ONLY</span>
+              <i class="fas fa-eye"></i> Preview ({{ count($framesByLayout['layout1']) }})
             </button>
           @endif
         </div>
@@ -86,9 +91,14 @@
           </div>
           <div class="layout-title">Layout 2</div>
           <div class="layout-sub">2 foto</div>
+          <div class="layout-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Melanjutkan</span>
+          </div>
           @if(count($framesByLayout['layout2'] ?? []) > 0)
             <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout2" title="Preview Frames">
-              <i class="fas fa-eye"></i> Preview Frames ({{ count($framesByLayout['layout2']) }})
+              <span class="preview-badge">VIEW ONLY</span>
+              <i class="fas fa-eye"></i> Preview ({{ count($framesByLayout['layout2']) }})
             </button>
           @endif
         </div>
@@ -102,9 +112,14 @@
           </div>
           <div class="layout-title">Layout 2 (2×2)</div>
           <div class="layout-sub">4 foto • 2×2</div>
+          <div class="layout-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Melanjutkan</span>
+          </div>
           @if(count($framesByLayout['layout2'] ?? []) > 0)
             <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout2" title="Preview Frames">
-              <i class="fas fa-eye"></i> Preview Frames ({{ count($framesByLayout['layout2']) }})
+              <span class="preview-badge">VIEW ONLY</span>
+              <i class="fas fa-eye"></i> Preview ({{ count($framesByLayout['layout2']) }})
             </button>
           @endif
         </div>
@@ -118,9 +133,14 @@
           </div>
           <div class="layout-title">Layout 3</div>
           <div class="layout-sub">3 x 2 foto • vertikal 6 Foto</div>
+          <div class="layout-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Melanjutkan</span>
+          </div>
           @if(count($framesByLayout['layout3'] ?? []) > 0)
             <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout3" title="Preview Frames">
-              <i class="fas fa-eye"></i> Preview Frames ({{ count($framesByLayout['layout3']) }})
+              <span class="preview-badge">VIEW ONLY</span>
+              <i class="fas fa-eye"></i> Preview ({{ count($framesByLayout['layout3']) }})
             </button>
           @endif
         </div>
@@ -136,9 +156,14 @@
           </div>
           <div class="layout-title">Layout 4</div>
           <div class="layout-sub">6 foto • 3×2</div>
+          <div class="layout-cta">
+            <i class="fas fa-hand-pointer"></i>
+            <span>Klik untuk Melanjutkan</span>
+          </div>
           @if(count($framesByLayout['layout4'] ?? []) > 0)
             <button type="button" class="layout-preview-btn js-preview-frames" data-layout="layout4" title="Preview Frames">
-              <i class="fas fa-eye"></i> Preview Frames ({{ count($framesByLayout['layout4']) }})
+              <span class="preview-badge">VIEW ONLY</span>
+              <i class="fas fa-eye"></i> Preview ({{ count($framesByLayout['layout4']) }})
             </button>
           @endif
         </div>
