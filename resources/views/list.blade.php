@@ -1946,6 +1946,18 @@
         })();
       </script>
     @elseif(Request::routeIs('print-photo'))
+      <div class="print-controls-panel" style="position: sticky; top: 10px; z-index: 100; margin: 0 auto 24px; max-width: min(680px, 90vw); padding: 14px 18px; border-radius: 16px; background: rgba(11,18,32,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; flex:1;">
+            <label style="display:inline-flex; align-items:center; gap:10px; color:#fff; font-size:15px; font-weight:500; cursor:pointer; padding:6px 10px; border-radius:10px; background: rgba(255,255,255,0.06); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+              <input id="printSelectAll" type="checkbox" style="width:20px; height:20px; cursor:pointer; accent-color: rgba(249,115,22,0.95);" />
+              <span style="font-family: 'Segoe UI', Tahoma, sans-serif;">Pilih semua</span>
+            </label>
+            <div id="printSelectionCount" style="color: rgba(255,255,255,0.78); font-size:13px; padding:6px 12px; background: rgba(249,115,22,0.12); border-radius:8px; border: 1px solid rgba(249,115,22,0.35);">0 dipilih</div>
+          </div>
+          <button id="printRotateSelectedBtn" type="button" style="font-family: 'Bungee'; font-size: 14px; padding:10px 18px; border-radius:12px; border: 2px solid rgba(255,255,255,0.32); background: rgba(255,255,255,0.08); color:#fff; cursor:pointer; transition: all 0.2s; text-shadow: 0 2px 6px rgba(0,0,0,0.4); white-space: nowrap;" onmouseover="this.style.background='rgba(249,115,22,0.85)'; this.style.borderColor='rgba(249,115,22,0.95)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(249,115,22,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.32)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">ROTATE</button>
+        </div>
+      </div>
       <form action="{{ route('print') }}" method="post">
         @csrf
         @foreach(collect($photos)->chunk(5) as $photoschunk)
@@ -1955,7 +1967,6 @@
                 <input type="checkbox" name="photos[]" class="checkbox-limit" id="{{ $photo }}" value="{{ $photo }}">
                 @php $photoSrc = asset(str_replace('public', 'storage', $photo)); @endphp
                 <label for="{{ $photo }}"><img class="rotatable-photo" data-rotate-src="{{ $photoSrc }}" src="{{ $photoSrc }}" alt=""></label>
-                <button type="button" class="photo-rotate-btn formbutton" data-photo-src="{{ $photoSrc }}" style="margin-top:8px; padding:6px 10px; border-radius: 12px; min-width: unset;">ROTATE</button>
               </div>
             @endforeach
           </div>
@@ -1976,6 +1987,143 @@
           if (window.PB_ROTATE && typeof window.PB_ROTATE.init === 'function') {
             window.PB_ROTATE.init(document);
           }
+
+          const selectAll = document.getElementById('printSelectAll');
+          const rotateSelectedBtn = document.getElementById('printRotateSelectedBtn');
+          const checkboxes = Array.from(document.querySelectorAll('input.checkbox-limit'));
+          const thumbs = Array.from(document.querySelectorAll('img.rotatable-photo[data-rotate-src]'));
+          let selectedSrc = null;
+          const maxAllowed = Number(window.maxChecked || checkboxes.length || 0) || checkboxes.length;
+
+          function setSelectedThumb(src) {
+            selectedSrc = src || null;
+            thumbs.forEach((img) => {
+              const key = img.getAttribute('data-rotate-src');
+              if (selectedSrc && key === selectedSrc) {
+                img.style.outline = '3px solid rgba(249,115,22,0.95)';
+                img.style.outlineOffset = '3px';
+                img.style.boxShadow = '0 0 0 4px rgba(0,0,0,0.25), 0 12px 30px rgba(249,115,22,0.22)';
+              } else {
+                img.style.outline = '';
+                img.style.outlineOffset = '';
+                img.style.boxShadow = '';
+              }
+            });
+          }
+
+          function updateSelectionCounter() {
+            const counter = document.getElementById('printSelectionCount');
+            if (!counter) return;
+            const checked = checkboxes.filter((cb) => cb.checked).length;
+            counter.textContent = `${checked} dipilih`;
+            if (checked >= maxAllowed) {
+              counter.style.background = 'rgba(249,115,22,0.22)';
+              counter.style.borderColor = 'rgba(249,115,22,0.55)';
+              counter.style.color = 'rgba(255,255,255,0.95)';
+              counter.style.fontWeight = '600';
+            } else {
+              counter.style.background = 'rgba(249,115,22,0.12)';
+              counter.style.borderColor = 'rgba(249,115,22,0.35)';
+              counter.style.color = 'rgba(255,255,255,0.78)';
+              counter.style.fontWeight = '400';
+            }
+          }
+
+          function enforceLimit() {
+            const checkedCount = checkboxes.filter((cb) => cb.checked).length;
+            if (checkedCount >= maxAllowed) {
+              checkboxes.forEach((cb) => { if (!cb.checked) cb.disabled = true; });
+            } else {
+              checkboxes.forEach((cb) => { cb.disabled = false; });
+            }
+            updateSelectionCounter();
+          }
+
+          function updateSelectAllState() {
+            if (!selectAll) return;
+            const total = checkboxes.length;
+            const checked = checkboxes.filter((cb) => cb.checked).length;
+            selectAll.indeterminate = checked > 0 && checked < total;
+            const wantAll = Math.min(maxAllowed, total);
+            selectAll.checked = total > 0 && checked >= wantAll;
+          }
+
+          if (selectAll) {
+            selectAll.addEventListener('change', () => {
+              const total = checkboxes.length;
+              const wantAll = Math.min(maxAllowed, total);
+              if (selectAll.checked) {
+                checkboxes.forEach((cb, idx) => {
+                  cb.checked = idx < wantAll;
+                  cb.disabled = false;
+                });
+              } else {
+                checkboxes.forEach((cb) => { cb.checked = false; cb.disabled = false; });
+              }
+              enforceLimit();
+              updateSelectAllState();
+            });
+          }
+
+          // Click thumbnail: toggle its checkbox and set selected
+          thumbs.forEach((img) => {
+            img.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              const src = img.getAttribute('data-rotate-src');
+              const wrapper = img.closest('.photo-item');
+              const cb = wrapper ? wrapper.querySelector('input.checkbox-limit') : null;
+              if (cb) {
+                const next = !cb.checked;
+                if (next) {
+                  const checkedCount = checkboxes.filter((c) => c.checked).length;
+                  if (checkedCount >= maxAllowed) {
+                    return;
+                  }
+                }
+                cb.checked = next;
+              }
+              setSelectedThumb(src);
+              enforceLimit();
+              updateSelectAllState();
+            });
+          });
+
+          // Checkbox change: update selected to that photo (if checked)
+          checkboxes.forEach((cb) => {
+            cb.addEventListener('change', () => {
+              const wrapper = cb.closest('.photo-item');
+              const img = wrapper ? wrapper.querySelector('img.rotatable-photo[data-rotate-src]') : null;
+              const src = img ? img.getAttribute('data-rotate-src') : null;
+              if (cb.checked && src) setSelectedThumb(src);
+              enforceLimit();
+              updateSelectAllState();
+            });
+          });
+
+          if (rotateSelectedBtn) {
+            rotateSelectedBtn.addEventListener('click', () => {
+              if (!selectedSrc || !window.PB_ROTATE) return;
+              const next = window.PB_ROTATE.normalizeDeg(window.PB_ROTATE.getDeg(selectedSrc) + 90);
+              window.PB_ROTATE.setDeg(selectedSrc, next);
+              const img = document.querySelector(`img.rotatable-photo[data-rotate-src="${selectedSrc.replace(/"/g, '\\"')}"]`);
+              if (img && window.PB_ROTATE.applyRotationToImg) {
+                window.PB_ROTATE.applyRotationToImg(img, next);
+              }
+            });
+          }
+
+          // init selected to first checked or first thumbnail
+          const firstChecked = checkboxes.find((cb) => cb.checked);
+          if (firstChecked) {
+            const wrap = firstChecked.closest('.photo-item');
+            const img = wrap ? wrap.querySelector('img.rotatable-photo[data-rotate-src]') : null;
+            if (img) setSelectedThumb(img.getAttribute('data-rotate-src'));
+          } else if (thumbs[0]) {
+            setSelectedThumb(thumbs[0].getAttribute('data-rotate-src'));
+          }
+          updateSelectAllState();
+          enforceLimit();
+          updateSelectionCounter();
         })();
       </script>
     @endif

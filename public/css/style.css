@@ -746,14 +746,24 @@ section#list-photo::-webkit-scrollbar {
 section#list-photo .photo-group {
     display: flex;
     flex-direction: row;
-    gap: 75px;
-    margin-bottom: 30px;
+    gap: 28px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 10px;
 }
 
 section#list-photo .photo-group img {
     width: 14vw;
     height: 15vh;
     border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section#list-photo .photo-group img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 
 .photo-item {
@@ -763,11 +773,14 @@ section#list-photo .photo-group img {
 
 .photo-item input[type="checkbox"] {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 38px;
-    height: 25px;
-    background-color: red;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    z-index: 10;
+    accent-color: rgba(249,115,22,0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.45);
 }
 
 .formgroup {
@@ -822,17 +835,25 @@ section#list-photo .photo-group img {
 .printphoto-actions {
     position: fixed;
     left: 50%;
-    bottom: 28px;
+    bottom: 24px;
     transform: translateX(-50%);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 64px;
+    gap: 48px;
     z-index: 50;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: rgba(11,18,32,0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
 }
 
 .printphoto-actions .formbutton {
     margin: 0;
+    font-size: 20px;
 }
 
 /* Compact UI for /listphoto preview controls (avoid giant formbutton sizing). */
@@ -869,7 +890,27 @@ section#list-photo .photo-group img {
 }
 
 @media (max-width: 720px) {
-    .printphoto-actions { gap: 28px; }
+    .printphoto-actions { 
+        gap: 20px; 
+        padding: 10px 14px;
+    }
+    .printphoto-actions .formbutton {
+        font-size: 16px;
+    }
+    section#list-photo .photo-group {
+        gap: 18px;
+    }
+    section#list-photo .photo-group img {
+        width: 28vw;
+        height: 18vh;
+    }
+    .print-controls-panel {
+        font-size: 13px !important;
+    }
+    .print-controls-panel button {
+        font-size: 12px !important;
+        padding: 8px 14px !important;
+    }
 }
 
 section#linkedvideo {
