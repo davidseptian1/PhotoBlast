@@ -26,10 +26,16 @@
     @endforeach
   </div>
 
-  <div id="successPopup" class="flow-popup" role="status" aria-live="polite">
-    <div class="flow-popup__title">Yey!</div>
-    <div class="flow-popup__body">Kamu bisa photo-photo nih.</div>
-    <button type="button" id="successPopupClose" class="flow-popup__close" aria-label="Tutup">OK</button>
+  <div id="successBackdrop" class="success-backdrop" style="display: none;"></div>
+  <div id="successPopup" class="flow-popup flow-popup-success" role="status" aria-live="polite" style="display: none;">
+    <div class="success-icon">
+      <div class="success-icon-circle">
+        <i class="fas fa-check"></i>
+      </div>
+    </div>
+    <div class="flow-popup__title" style="font-size: 32px; margin-top: 16px;">Pembayaran Berhasil!</div>
+    <div class="flow-popup__body" style="font-size: 18px; margin-top: 12px;">Anda sudah membayar. Halaman akan otomatis menutup dalam <span id="countdownTimer" style="font-weight: 800; color: #f97316; font-size: 24px;">5</span> detik</div>
+    <button type="button" id="successPopupClose" class="flow-popup__close" aria-label="Tutup" style="margin-top: 20px; opacity: 0.5; pointer-events: none;">OK, Mengerti</button>
   </div>
 
   <div class="card">
@@ -59,9 +65,9 @@
             data-osk-layout="email"
             data-osk-enter-target="#saveEmailBtn"
             required
-            value="{{ $hasRealEmail ? $currentEmail : '' }}"
+            value=""
             placeholder="nama@email.com"
-            autocomplete="email"
+            autocomplete="off"
             inputmode="email"
             class="flow-email__input"
           />
@@ -84,15 +90,58 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var popup = document.getElementById('successPopup');
+    var backdrop = document.getElementById('successBackdrop');
     var closeBtn = document.getElementById('successPopupClose');
-    if (!popup) return;
+    var countdownEl = document.getElementById('countdownTimer');
+    if (!popup || !backdrop) return;
 
-    function hidePopup() {
-      popup.classList.add('is-hidden');
+    var countdown = 5;
+    var timer = null;
+
+    // Show popup and backdrop on page load
+    popup.style.display = 'flex';
+    backdrop.style.display = 'block';
+
+    function updateCountdown() {
+      countdown--;
+      if (countdownEl) {
+        countdownEl.textContent = countdown;
+        countdownEl.style.animation = 'countdownPulse 0.3s ease';
+        setTimeout(function() {
+          if (countdownEl) countdownEl.style.animation = '';
+        }, 300);
+      }
+      
+      // Enable button when countdown reaches 2 or less
+      if (countdown <= 2 && closeBtn) {
+        closeBtn.style.opacity = '1';
+        closeBtn.style.pointerEvents = 'auto';
+      }
+      
+      if (countdown <= 0) {
+        clearInterval(timer);
+        hidePopup();
+      }
     }
 
-    if (closeBtn) closeBtn.addEventListener('click', hidePopup);
-    window.setTimeout(hidePopup, 3200);
+    function hidePopup() {
+      if (timer) clearInterval(timer);
+      popup.classList.add('is-hidden');
+      backdrop.classList.add('is-hidden');
+      
+      // Completely remove after animation
+      setTimeout(function() {
+        popup.style.display = 'none';
+        backdrop.style.display = 'none';
+      }, 300);
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', hidePopup);
+    }
+
+    // Start countdown immediately
+    timer = setInterval(updateCountdown, 1000);
   });
 </script>
 @endsection

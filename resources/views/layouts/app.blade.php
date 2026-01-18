@@ -256,7 +256,13 @@
   @endif
 
   @if(Request::routeIs('flow.*') || Request::routeIs('redeem.*') || Request::routeIs('tempcollage.*'))
-    <div class="simple-keyboard" aria-hidden="true"></div>
+    <div class="keyboard-container">
+      <div class="keyboard-preview" id="keyboardPreview" aria-hidden="true">
+        <div class="keyboard-preview-label">Sedang mengetik:</div>
+        <div class="keyboard-preview-text" id="keyboardPreviewText"></div>
+      </div>
+      <div class="simple-keyboard" aria-hidden="true"></div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
     <script src="{{ asset('js/keyboard.js') }}"></script>
   @endif

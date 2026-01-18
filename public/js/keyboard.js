@@ -5,8 +5,23 @@ let keyboard = null;
 let activeInput = null;
 let activeSubmitTarget = null;
 
+function getKeyboardContainer() {
+    return document.querySelector('.keyboard-container');
+}
+
 function getKeyboardElement() {
     return document.querySelector('.simple-keyboard');
+}
+
+function getKeyboardPreviewText() {
+    return document.getElementById('keyboardPreviewText');
+}
+
+function updatePreviewText(value) {
+    const previewEl = getKeyboardPreviewText();
+    if (previewEl) {
+        previewEl.textContent = value || '';
+    }
 }
 
 function getMainSection() {
@@ -24,10 +39,18 @@ function ensureKeyboard() {
     keyboard = new Keyboard({
         onChange: (value) => {
             if (!activeInput) return;
+            const oldValue = activeInput.value;
             activeInput.value = value;
+            updatePreviewText(value);
             try {
                 activeInput.dispatchEvent(new Event('input', { bubbles: true }));
             } catch (_) {}
+            
+            // Highlight the button if value changed
+            if (value.length > oldValue.length) {
+                const lastChar = value.charAt(value.length - 1);
+                highlightKeyboardButton(lastChar);
+            }
         },
         onKeyPress: (button) => {
             if (button === '{enter}') {
@@ -52,9 +75,9 @@ function ensureKeyboard() {
 }
 
 function showKeyboardForInput(input) {
-    const theKeyboard = getKeyboardElement();
+    const keyboardContainer = getKeyboardContainer();
     const kb = ensureKeyboard();
-    if (!theKeyboard || !kb) return;
+    if (!keyboardContainer || !kb) return;
 
     activeInput = input;
 
@@ -93,19 +116,47 @@ function showKeyboardForInput(input) {
     }
 
     kb.setInput(input.value || '');
+    updatePreviewText(input.value || '');
 
-    theKeyboard.style.display = 'block';
+    keyboardContainer.classList.add('active');
     const mainSection = getMainSection();
-    if (mainSection) mainSection.style.paddingBottom = '260px';
+    if (mainSection) mainSection.style.paddingBottom = '480px';
 }
 
 function hideKeyboard() {
-    const theKeyboard = getKeyboardElement();
-    if (theKeyboard) theKeyboard.style.display = 'none';
+    const keyboardContainer = getKeyboardContainer();
+    if (keyboardContainer) keyboardContainer.classList.remove('active');
     const mainSection = getMainSection();
     if (mainSection) mainSection.style.paddingBottom = '';
+    updatePreviewText('');
     activeInput = null;
     activeSubmitTarget = null;
+}
+
+function highlightKeyboardButton(char) {
+    if (!keyboard) return;
+    
+    const theKeyboard = getKeyboardElement();
+    if (!theKeyboard) return;
+    
+    // Map characters to button data-skbtn attribute
+    let buttonKey = char.toLowerCase();
+    
+    // Handle special characters
+    if (char === ' ') buttonKey = '{space}';
+    else if (char === '\n' || char === '\r') buttonKey = '{enter}';
+    
+    // Find the button
+    const button = theKeyboard.querySelector(`[data-skbtn="${buttonKey}"]`);
+    if (!button) return;
+    
+    // Add highlight class
+    button.classList.add('hg-button-active-feedback');
+    
+    // Remove highlight after animation
+    setTimeout(() => {
+        button.classList.remove('hg-button-active-feedback');
+    }, 200);
 }
 
 function isFocusableInput(el) {
@@ -118,13 +169,56 @@ document.addEventListener('focusin', (e) => {
     showKeyboardForInput(target);
 });
 
+// Listen for actual keyboard input to highlight buttons
+document.addEventListener('input', (e) => {
+    const target = e.target;
+    if (!isFocusableInput(target)) return;
+    
+    // Update preview text
+    updatePreviewText(target.value);
+    
+    // Update keyboard display
+    if (keyboard) {
+        keyboard.setInput(target.value);
+    }
+    
+    // Get the last character typed
+    const inputValue = target.value;
+    if (inputValue && inputValue.length > 0) {
+        const lastChar = inputValue.charAt(inputValue.length - 1);
+        highlightKeyboardButton(lastChar);
+    }
+});
+
+// Listen for physical keyboard presses
+document.addEventListener('keydown', (e) => {
+    if (!activeInput) return;
+    
+    // Handle backspace
+    if (e.key === 'Backspace') {
+        highlightKeyboardButton('{bksp}');
+        return;
+    }
+    
+    // Handle enter
+    if (e.key === 'Enter') {
+        highlightKeyboardButton('{enter}');
+        return;
+    }
+    
+    // Handle regular characters
+    if (e.key.length === 1) {
+        highlightKeyboardButton(e.key);
+    }
+});
+
 // Hide keyboard when clicking outside input and keyboard
 document.addEventListener('pointerdown', (e) => {
-    const theKeyboard = getKeyboardElement();
-    if (!theKeyboard) return;
+    const keyboardContainer = getKeyboardContainer();
+    if (!keyboardContainer) return;
 
     const target = e.target;
-    const clickedInsideKeyboard = theKeyboard.contains(target);
+    const clickedInsideKeyboard = keyboardContainer.contains(target);
     const clickedOnInput = isFocusableInput(target);
     if (!clickedInsideKeyboard && !clickedOnInput) {
         hideKeyboard();
