@@ -132,13 +132,15 @@
         @if(!($hidden[3] ?? false))
         <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm3" data-layout="3" data-enabled="{{ ($enabled[3] ?? true) ? '1' : '0' }}">
           <div class="layout-preview layout-3">
-            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 18%;"></span>
-            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 36%;"></span>
-            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 54%;"></span>
-            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 72%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 30% 20%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 70% 20%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 30% 50%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 70% 50%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 30% 80%;"></span>
+            <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 70% 80%;"></span>
           </div>
           <div class="layout-title">Layout 3</div>
-          <div class="layout-sub">3 x 2 foto • vertikal 6 Foto</div>
+          <div class="layout-sub">3 x 2 foto • 6 Foto</div>
           <div class="layout-cta">
             <i class="fas fa-hand-pointer"></i>
             <span>Klik untuk Melanjutkan</span>

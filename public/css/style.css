@@ -1713,8 +1713,8 @@ section#linkedvideo a {
 }
 
 .flow-container.flow-themed .layout-preview.layout-3 {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
 }
 
 .flow-container.flow-themed .layout-preview.layout-4 {

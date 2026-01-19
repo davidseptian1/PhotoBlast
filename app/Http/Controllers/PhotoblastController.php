@@ -628,8 +628,8 @@ PS;
         if (!empty($flow->layout_key) && (int) $flow->layout_count > 0) {
             $key = (string) $flow->layout_key;
             $count = (int) $flow->layout_count;
-            // Backward-compat: older runs may store layout3 as 4, but layout3 now needs 6 photos.
-            if ($key === 'layout3' && $count < 6) {
+            // Backward-compat: older runs may store layout3 as 4 or 7, but layout3 now needs 6 photos.
+            if ($key === 'layout3' && $count !== 6) {
                 $count = 6;
             }
             session([
