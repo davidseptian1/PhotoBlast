@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCodeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\AppSetting;
+use App\Models\FlowRun;
 use DB;
 class CodeController extends Controller
 {
@@ -32,13 +33,33 @@ class CodeController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'nullable|string',
+        ]);
+
+        $codeValue = (string) ($request->code ?: session('flow_code') ?: session('code'));
+        if ($codeValue === '') {
+            return redirect()->route('redeem.index')->with('message', 'Kode tidak ditemukan.');
+        }
 
         // deteksi code apakah tersedia dalam database atau tidak
-        // $code = Code::where('code', 'LIKE', $request->code)->first();
-        $code = Code::whereRaw('BINARY `code` = ?', [$request->code])->first();
+        $code = Code::whereRaw('BINARY `code` = ?', [$codeValue])->first();
         if($code && $code->status == 'ready') {
             // simpan data code ke session
             Session::put('code', $code->code);
+
+            if ($code->transaction) {
+                $code->transaction->email = (string) $request->email;
+                $code->transaction->save();
+            }
+
+            $flowId = (int) session('flow_run_id', 0);
+            if ($flowId > 0) {
+                FlowRun::where('id', $flowId)->update([
+                    'email' => (string) $request->email,
+                ]);
+            }
 
             // Start global flow timer (max 8 minutes until print)
             $mins = (int) (AppSetting::getString('tempcollage.flow_timeout_minutes', '8') ?: '8');

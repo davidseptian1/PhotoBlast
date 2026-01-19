@@ -32,82 +32,29 @@
     @endif
     <div id="redeemNotice" class="flow-notice" role="status" aria-live="polite" hidden></div>
 
-    <h1>Redeem Code</h1>
-    <p>Tap kolom kode lalu tekan <strong>Tempel</strong> untuk memasukkan kode.</p>
+    <h1>Masukkan Email</h1>
+    <p>Isi email Anda lalu tekan <strong>Submit</strong>.</p>
 
     <form action="{{ route('redeem.store') }}" method="post">
       @csrf
       <div style="margin-top:12px; display:flex; justify-content:center;">
         <input
-          type="text"
-          name="code"
-          id="redeemInput"
-          autocomplete="off"
+          type="email"
+          name="email"
+          id="emailInput"
+          autocomplete="email"
           spellcheck="false"
-          autocapitalize="characters"
-          inputmode="text"
-          maxlength="5"
-          placeholder="XXXXX"
-          style="width: min(360px, 80vw); height: 56px; font-size: 22px; text-align: center; border-radius: 12px; border: 1px solid rgba(124, 45, 18, 0.14); outline: none;"
+          inputmode="email"
+          placeholder="nama@email.com"
+          style="width: min(360px, 80vw); height: 56px; font-size: 18px; text-align: center; border-radius: 12px; border: 1px solid rgba(124, 45, 18, 0.14); outline: none;"
           required
         />
       </div>
 
       <div class="flow-actions">
-        <button type="button" class="btn" id="pasteBtn">Tempel</button>
         <button type="submit" class="btn primary">Submit</button>
       </div>
     </form>
   </div>
 </section>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var input = document.getElementById('redeemInput');
-    var pasteBtn = document.getElementById('pasteBtn');
-    var notice = document.getElementById('redeemNotice');
-    if (!input || !pasteBtn || !notice) return;
-
-    function showNotice(message) {
-      notice.textContent = message;
-      notice.hidden = false;
-      window.setTimeout(function () { notice.hidden = true; }, 2600);
-    }
-
-    function normalizeCode(text) {
-      return (text || '')
-        .toString()
-        .trim()
-        .replace(/\s+/g, '')
-        .toUpperCase()
-        .slice(0, 5);
-    }
-
-    async function tryPaste() {
-      if (!navigator.clipboard || !navigator.clipboard.readText) {
-        showNotice('Fitur tempel otomatis tidak tersedia di browser ini. Silakan paste manual.');
-        return;
-      }
-      try {
-        var text = await navigator.clipboard.readText();
-        var code = normalizeCode(text);
-        if (!code) {
-          showNotice('Clipboard kosong. Salin kode dulu ya, lalu tekan Tempel.');
-          return;
-        }
-        input.value = code;
-        input.focus();
-      } catch (e) {
-        showNotice('Izin clipboard tidak aktif. Tekan & tahan untuk Paste, atau gunakan keyboard.');
-      }
-    }
-
-    pasteBtn.addEventListener('click', tryPaste);
-
-    // UX touchscreen: tap input -> coba tempel otomatis
-    input.addEventListener('pointerdown', function () {
-      window.setTimeout(tryPaste, 0);
-    });
-  });
-</script>
 @endsection

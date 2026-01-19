@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Code;
+use App\Models\AppSetting;
 use Illuminate\Support\Str;
 use App\Models\FlowRun;
 
@@ -179,6 +180,12 @@ class FlowController extends Controller
                 'email' => $newEmail,
             ]);
         }
-        return redirect()->back()->with('message', 'Email disimpan.');
+        // Start global flow timer (max 8 minutes until print)
+        $mins = (int) (AppSetting::getString('tempcollage.flow_timeout_minutes', '8') ?: '8');
+        $mins = max(1, min(60, $mins));
+        session()->put('pb_flow_started_at', now()->timestamp);
+        session()->put('pb_flow_deadline', now()->addMinutes($mins)->timestamp);
+
+        return redirect()->route('tempcollage.index')->with('message', 'Email disimpan.');
     }
 }

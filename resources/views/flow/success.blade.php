@@ -39,9 +39,8 @@
   </div>
 
   <div class="card">
-    <h1>Pembayaran Berhasil</h1>
-    <p>Terima kasih. Berikut kode redeem Anda:</p>
-    <div class="code-box" id="codeBox">{{ $code }}</div>
+    <h1>Masukkan Email</h1>
+    <p>Isi email Anda untuk melanjutkan ke pilihan layout.</p>
 
     @if(session('message'))
       <div class="flow-notice" style="margin-top: 10px;">{{ session('message') }}</div>
@@ -53,7 +52,7 @@
     @endphp
 
     <div class="flow-email">
-      <p class="flow-email__label">Masukkan email untuk menerima hasil setelah print:</p>
+      <p class="flow-email__label">Masukkan email:</p>
       <form action="{{ route('flow.updateEmail') }}" method="post" class="flow-email__form">
         @csrf
         <div class="flow-email__row">
@@ -71,18 +70,9 @@
             inputmode="email"
             class="flow-email__input"
           />
-          <button type="submit" id="saveEmailBtn" class="btn primary flow-email__btn">Simpan Email</button>
+          <button type="submit" id="saveEmailBtn" class="btn primary flow-email__btn">Submit</button>
         </div>
       </form>
-    </div>
-
-    <div class="flow-actions">
-      <button class="btn" id="copyBtn">Salin Kode</button>
-      @if($hasRealEmail)
-        <a href="{{ route('redeem.index') }}"><button class="btn primary">Redeem Kode</button></a>
-      @else
-        <button class="btn primary" type="button" disabled style="opacity:0.55; cursor:not-allowed;">Redeem Kode</button>
-      @endif
     </div>
   </div>
 </section>
