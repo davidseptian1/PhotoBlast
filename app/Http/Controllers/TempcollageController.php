@@ -30,6 +30,13 @@ class TempcollageController extends Controller
                     4 => AppSetting::getString('tempcollage.layout4.enabled', '0') === '1',
                 ];
 
+                $layoutHidden = [
+                    1 => AppSetting::getString('tempcollage.layout1.hidden', '0') === '1',
+                    2 => AppSetting::getString('tempcollage.layout2.hidden', '0') === '1',
+                    3 => AppSetting::getString('tempcollage.layout3.hidden', '0') === '1',
+                    4 => AppSetting::getString('tempcollage.layout4.hidden', '0') === '1',
+                ];
+
                 // Get frames for each layout to show in preview modal
                 $framesByLayout = [];
                 foreach (['layout1', 'layout2', 'layout3', 'layout4'] as $layoutKey) {
@@ -48,6 +55,7 @@ class TempcollageController extends Controller
 
                 return view('template', [
                     'layout_enabled' => $layoutEnabled,
+                    'layout_hidden' => $layoutHidden,
                     'frames_by_layout' => $framesByLayout,
                 ]);
             }
@@ -68,6 +76,18 @@ class TempcollageController extends Controller
         ]);
 
         $layout = (int) $request->layout;
+
+        $hidden = match ($layout) {
+            1 => AppSetting::getString('tempcollage.layout1.hidden', '0') === '1',
+            2 => AppSetting::getString('tempcollage.layout2.hidden', '0') === '1',
+            3 => AppSetting::getString('tempcollage.layout3.hidden', '0') === '1',
+            4 => AppSetting::getString('tempcollage.layout4.hidden', '0') === '1',
+            default => false,
+        };
+
+        if ($hidden) {
+            return redirect()->route('tempcollage.index')->with('message', 'Layout disembunyikan');
+        }
 
         $enabled = match ($layout) {
             1 => AppSetting::getString('tempcollage.layout1.enabled', '0') === '1',

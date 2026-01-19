@@ -38,6 +38,7 @@
 
     @php
       $enabled = $layout_enabled ?? [1 => false, 2 => true, 3 => true, 4 => false];
+      $hidden = $layout_hidden ?? [1 => false, 2 => false, 3 => false, 4 => false];
       $framesByLayout = $frames_by_layout ?? ['layout1'=>[], 'layout2'=>[], 'layout3'=>[], 'layout4'=>[]];
     @endphp
 
@@ -66,6 +67,7 @@
     </form>
 
     <div class="layout-grid">
+        @if(false)
         <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm1" data-layout="1" data-enabled="{{ ($enabled[1] ?? false) ? '1' : '0' }}">
           <div class="layout-preview layout-1">
             <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout1', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 35%;"></span>
@@ -83,7 +85,9 @@
             </button>
           @endif
         </div>
+        @endif
 
+        @if(!($hidden[2] ?? false))
         <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm2" data-layout="2" data-count="2" data-enabled="{{ ($enabled[2] ?? true) ? '1' : '0' }}">
           <div class="layout-preview layout-2">
             <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout2', 'img/bgkamera.jpg') }}'); --layout-pos: 30% 35%;"></span>
@@ -123,7 +127,9 @@
             </button>
           @endif
         </div>
+        @endif
 
+        @if(!($hidden[3] ?? false))
         <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm3" data-layout="3" data-enabled="{{ ($enabled[3] ?? true) ? '1' : '0' }}">
           <div class="layout-preview layout-3">
             <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout3', 'img/bgkamera.jpg') }}'); --layout-pos: 50% 18%;"></span>
@@ -144,7 +150,9 @@
             </button>
           @endif
         </div>
+        @endif
 
+        @if(false)
         <div role="button" tabindex="0" class="layout-option js-layout-option" data-form="pbLayoutForm4" data-layout="4" data-enabled="{{ ($enabled[4] ?? false) ? '1' : '0' }}">
           <div class="layout-preview layout-4">
             <span class="layout-thumb" style="--layout-thumb: url('{{ \App\Models\PageBackground::url('tempcollage.thumb.layout4', 'img/bgkamera.jpg') }}'); --layout-pos: 30% 22%;"></span>
@@ -167,6 +175,7 @@
             </button>
           @endif
         </div>
+        @endif
       </div>
   </div>
 

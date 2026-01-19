@@ -17,11 +17,19 @@ class AppSettingsController extends Controller
         $flowTimeoutMinutes = (int) (AppSetting::getString('tempcollage.flow_timeout_minutes', (string) $flowTimeoutDefault) ?: $flowTimeoutDefault);
         if ($flowTimeoutMinutes <= 0) $flowTimeoutMinutes = $flowTimeoutDefault;
 
+        $layoutHidden = [
+            1 => AppSetting::getString('tempcollage.layout1.hidden', '0') === '1',
+            2 => AppSetting::getString('tempcollage.layout2.hidden', '0') === '1',
+            3 => AppSetting::getString('tempcollage.layout3.hidden', '0') === '1',
+            4 => AppSetting::getString('tempcollage.layout4.hidden', '0') === '1',
+        ];
+
         return view('admin.settings.index', [
             'row_gap_ratio' => $rowGap,
             'row_gap_default' => $default,
             'flow_timeout_minutes' => $flowTimeoutMinutes,
             'flow_timeout_default' => $flowTimeoutDefault,
+            'layout_hidden' => $layoutHidden,
         ]);
     }
 
@@ -40,6 +48,11 @@ class AppSettingsController extends Controller
         $mins = (int) $request->input('flow_timeout_minutes', 8);
         $mins = max(1, min(60, $mins));
         AppSetting::setString('tempcollage.flow_timeout_minutes', (string) $mins);
+
+        AppSetting::setString('tempcollage.layout1.hidden', (($request->input('layout1_hidden') ?? '0') === '1') ? '1' : '0');
+        AppSetting::setString('tempcollage.layout2.hidden', (($request->input('layout2_hidden') ?? '0') === '1') ? '1' : '0');
+        AppSetting::setString('tempcollage.layout3.hidden', (($request->input('layout3_hidden') ?? '0') === '1') ? '1' : '0');
+        AppSetting::setString('tempcollage.layout4.hidden', (($request->input('layout4_hidden') ?? '0') === '1') ? '1' : '0');
 
         return redirect()->route('admin.settings.index')->with('message', 'Setting disimpan.');
     }

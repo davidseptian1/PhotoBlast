@@ -32,6 +32,12 @@
       <form method="POST" action="{{ route('admin.settings.update') }}" style="display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap;">
         @csrf
 
+        <input type="hidden" name="flow_timeout_minutes" value="{{ $flow_timeout_minutes }}" />
+        <input type="hidden" name="row_gap_ratio" value="{{ $row_gap_ratio }}" />
+
+        <input type="hidden" name="flow_timeout_minutes" value="{{ $flow_timeout_minutes }}" />
+        <input type="hidden" name="row_gap_ratio" value="{{ $row_gap_ratio }}" />
+
         <div style="min-width: 280px;">
           <div style="font-family: 'Bungee'; font-size: 14px; margin-bottom: 6px;">Batas Waktu Flow (User)</div>
           <div style="font-size: 13px; opacity: 0.85; margin-bottom: 10px;">
@@ -55,6 +61,40 @@
             Tip: coba <b>0.006</b>–<b>0.012</b> untuk merapatkan baris.
           </div>
         </div>
+
+        <button type="submit" class="formbutton" style="width:auto; padding: 10px 16px;">Simpan</button>
+      </form>
+    </div>
+
+    <div style="margin-top: 18px; border: 1px solid #cfd4da; border-radius: 14px; padding: 16px;">
+      <h2 style="margin: 0 0 10px 0; font-family: 'Bungee';">Hide Layout di Halaman Pilih Layout</h2>
+      <p style="font-size: 13px; opacity: 0.85; margin: 6px 0 12px;">
+        Jika dicentang, layout benar-benar disembunyikan dari tampilan user.
+      </p>
+
+      <form method="POST" action="{{ route('admin.settings.update') }}" style="display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap;">
+        @csrf
+
+        @php
+          $layoutHidden = $layout_hidden ?? [1 => false, 2 => false, 3 => false, 4 => false];
+        @endphp
+
+        <label style="display:flex; align-items:center; gap:8px; min-width:160px;">
+          <input type="checkbox" name="layout1_hidden" value="1" @if($layoutHidden[1] ?? false) checked @endif />
+          <span><b>Layout 1</b> disembunyikan</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; min-width:160px;">
+          <input type="checkbox" name="layout2_hidden" value="1" @if($layoutHidden[2] ?? false) checked @endif />
+          <span><b>Layout 2</b> disembunyikan</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; min-width:160px;">
+          <input type="checkbox" name="layout3_hidden" value="1" @if($layoutHidden[3] ?? false) checked @endif />
+          <span><b>Layout 3</b> disembunyikan</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; min-width:160px;">
+          <input type="checkbox" name="layout4_hidden" value="1" @if($layoutHidden[4] ?? false) checked @endif />
+          <span><b>Layout 4</b> disembunyikan</span>
+        </label>
 
         <button type="submit" class="formbutton" style="width:auto; padding: 10px 16px;">Simpan</button>
       </form>
