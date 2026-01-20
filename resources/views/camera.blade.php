@@ -114,4 +114,99 @@
     })();
   </script>
   <script src="{{ asset('js/camera.js') }}?v={{ @filemtime(public_path('js/camera.js')) ?: time() }}"></script>
+  
+  <script>
+    // Tutorial Implementation for Camera Page
+    document.addEventListener('DOMContentLoaded', function() {
+      const tutorialHelper = new TutorialHelper();
+      
+      // Tunggu sebentar agar semua elemen kamera sudah ter-render
+      setTimeout(function() {
+        if (!tutorialHelper.hasSeenTutorial) {
+          tutorialHelper.showWelcomePopup('Halaman Kamera').then(showTutorial => {
+            if (showTutorial) {
+              const steps = [
+                {
+                  element: '.video-container',
+                  popover: {
+                    title: '📷 Preview Kamera',
+                    description: 'Ini adalah preview kamera Anda. Posisikan diri Anda dengan baik dan pastikan wajah terlihat jelas. Tersenyum! 😊',
+                    position: 'bottom'
+                  }
+                },
+                {
+                  element: '#mirrorToggle',
+                  popover: {
+                    title: '🔄 Flip Camera',
+                    description: 'Gunakan tombol ini untuk membalik tampilan kamera (mirror/normal). Pilih yang paling nyaman untuk Anda.',
+                    position: 'left'
+                  }
+                },
+                {
+                  element: '#cameraFilterSelect',
+                  popover: {
+                    title: '🎨 Filter',
+                    description: 'Pilih filter untuk foto Anda. Tersedia berbagai filter seperti B&W, Sepia, Vintage, dan lainnya.',
+                    position: 'right'
+                  }
+                },
+                {
+                  element: '.timer-button',
+                  popover: {
+                    title: '⏱️ Timer/Countdown',
+                    description: 'Set timer countdown sebelum foto diambil. Defaultnya 3 detik, beri Anda waktu untuk bersiap!',
+                    position: 'top'
+                  }
+                },
+                {
+                  element: '.camera-button',
+                  popover: {
+                    title: '📸 Tombol Ambil Foto',
+                    description: 'Klik tombol besar ini untuk mengambil foto. Countdown akan dimulai dan foto akan diambil secara otomatis.',
+                    position: 'top'
+                  }
+                },
+                {
+                  element: '.autocapture-button',
+                  popover: {
+                    title: '🔁 Auto Capture',
+                    description: 'Aktifkan mode auto capture untuk mengambil semua foto secara otomatis dengan interval tertentu.',
+                    position: 'top'
+                  }
+                },
+                {
+                  element: '#PhotoList',
+                  popover: {
+                    title: '🖼️ Daftar Foto',
+                    description: 'Semua foto yang sudah Anda ambil akan muncul di sini. Anda bisa mengulang foto tertentu jika diperlukan.',
+                    position: 'left'
+                  }
+                },
+                {
+                  popover: {
+                    title: '✅ Siap Memotret!',
+                    description: 'Sekarang Anda siap untuk mengambil foto! Bersenang-senanglah dan buat momen yang tak terlupakan! 🎉📸',
+                  }
+                }
+              ];
+              
+              tutorialHelper.startTour(steps);
+            } else {
+              tutorialHelper.markTutorialAsSeen();
+            }
+          });
+        }
+
+        // Tombol replay tutorial
+        const replayBtn = document.createElement('button');
+        replayBtn.className = 'tutorial-replay-btn';
+        replayBtn.innerHTML = '❓ Lihat Tutorial Lagi';
+        replayBtn.onclick = function() {
+          tutorialHelper.resetTutorial();
+          location.reload();
+        };
+        document.body.appendChild(replayBtn);
+      }, 500); // Tunggu 0.5 detik
+    });
+  </script>
 @endsection

@@ -9,10 +9,9 @@ function mmToPx(mm, dpi) {
 }
 
 function getBasePadding(canvasWidth, canvasHeight) {
-    // Keep margins visually similar to the old 1050×1480 canvas where padding=40.
-    const baseMin = 1050; // previous min dimension
-    const minDim = Math.min(canvasWidth, canvasHeight);
-    return Math.max(20, Math.round(40 * (minDim / baseMin)));
+    // Minimal padding untuk A6 agar tidak terpotong
+    // Hanya kasih padding minimal untuk layout yang bukan full-bleed
+    return 10; // Padding minimal 10px
 }
 const rotateMapStorageKey = 'pb_rotate_map_v1';
 

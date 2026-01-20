@@ -52,9 +52,63 @@
       </div>
 
       <div class="flow-actions">
-        <button type="submit" class="btn primary">Submit</button>
+        <button type="submit" id="submitEmailBtn" class="btn primary">Submit</button>
       </div>
     </form>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof TutorialHelper === 'undefined') {
+        console.error('TutorialHelper not loaded!');
+        return;
+    }
+    
+    setTimeout(function() {
+        const tutorialHelper = new TutorialHelper();
+        
+        // Cek apakah user perlu tutorial
+        if (!tutorialHelper.hasSeenTutorial) {
+        tutorialHelper.showWelcomePopup('Halaman Email').then(showTutorial => {
+            if (showTutorial) {
+                // Jalankan tutorial
+                const steps = [
+                    {
+                        element: '#emailInput',
+                        popover: {
+                            title: '📧 Masukkan Email',
+                            description: 'Ketik alamat email Anda di sini. Email ini akan digunakan untuk mengirim foto-foto Anda setelah selesai.',
+                            position: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#submitEmailBtn',
+                        popover: {
+                            title: '✅ Klik Submit',
+                            description: 'Setelah mengisi email, klik tombol Submit untuk melanjutkan. Anda akan diarahkan ke halaman pemilihan template.',
+                            position: 'top'
+                        }
+                    }
+                ];
+                
+                tutorialHelper.startTour(steps);
+            } else {
+                tutorialHelper.markTutorialAsSeen();
+            }
+        });
+    }
+
+    // Tombol untuk replay tutorial
+    const replayBtn = document.createElement('button');
+    replayBtn.className = 'tutorial-replay-btn';
+    replayBtn.innerHTML = '❓ Lihat Tutorial Lagi';
+    replayBtn.onclick = function() {
+        tutorialHelper.resetTutorial();
+        location.reload();
+    };
+    document.body.appendChild(replayBtn);
+    }, 300); // Delay 0.3 detik
+});
+</script>
 @endsection

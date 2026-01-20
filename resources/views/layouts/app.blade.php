@@ -14,11 +14,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
+  <!-- Tutorial CSS and Libraries -->
+  <link rel="stylesheet" href="{{ asset('css/tutorial.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+
   @if(Request::routeIs('flow.*') || Request::routeIs('redeem.*') || Request::routeIs('tempcollage.*') || Request::routeIs(['camera', 'retake-photo', 'list-photo', 'print-photo', 'print']))
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
   @endif
   @if(Request::routeIs(['camera', 'retake-photo', 'print']))
     <link rel="stylesheet" href="{{ asset('css/camera.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/print-a6.css') }}">
     <script src="{{ asset('js/jquery.min.js') }}"></script>
     <script src="{{ asset("js/jszip.min.js") }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -266,6 +271,12 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
     <script src="{{ asset('js/keyboard.js') }}"></script>
   @endif
+
+  <!-- Tutorial Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{ asset('js/tutorial-helper.js') }}"></script>
+
   <script src="{{ asset('/sw.js') }}"></script>
   <script>  
     if(!navigator.serviceWorker.controller) {

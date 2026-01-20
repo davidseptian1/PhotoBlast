@@ -46,4 +46,56 @@
     const forceUseBrowser = {!! json_encode((bool) ($force_use_browser ?? false)) !!};
   </script>
   <script src="{{ asset('js/print.js') }}?v={{ @filemtime(public_path('js/print.js')) }}"></script>
+  
+  <script>
+    // Tutorial Implementation for Print Page
+    document.addEventListener('DOMContentLoaded', function() {
+      const tutorialHelper = new TutorialHelper();
+      
+      setTimeout(function() {
+        if (!tutorialHelper.hasSeenTutorial) {
+          tutorialHelper.showWelcomePopup('Halaman Print').then(showTutorial => {
+            if (showTutorial) {
+              const steps = [
+                {
+                  element: '.listphoto-card',
+                  popover: {
+                    title: '🖨️ Proses Print',
+                    description: 'Sistem sedang menyiapkan hasil foto Anda untuk dicetak. Dialog print akan muncul sebentar lagi.',
+                    position: 'top'
+                  }
+                },
+                {
+                  popover: {
+                    title: '📋 Langkah Selanjutnya',
+                    description: 'Setelah dialog print muncul, pilih printer dan klik OK/Print. Jangan tutup halaman ini sampai proses selesai!',
+                  }
+                },
+                {
+                  popover: {
+                    title: '✅ Selesai!',
+                    description: 'Foto Anda akan segera dicetak. Terima kasih telah menggunakan layanan kami! Jangan lupa cek email untuk salinan digital! 📧✨',
+                  }
+                }
+              ];
+              
+              tutorialHelper.startTour(steps);
+            } else {
+              tutorialHelper.markTutorialAsSeen();
+            }
+          });
+        }
+
+        // Tombol replay tutorial
+        const replayBtn = document.createElement('button');
+        replayBtn.className = 'tutorial-replay-btn';
+        replayBtn.innerHTML = '❓ Lihat Tutorial Lagi';
+        replayBtn.onclick = function() {
+          tutorialHelper.resetTutorial();
+          location.reload();
+        };
+        document.body.appendChild(replayBtn);
+      }, 500); // Delay 0.5 detik
+    });
+  </script>
 @endsection

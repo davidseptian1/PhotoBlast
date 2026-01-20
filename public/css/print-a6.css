@@ -1,0 +1,74 @@
+/**
+ * Print CSS untuk A6 Paper (105mm x 148mm)
+ * Mengatasi masalah print terpotong di sisi kiri dan kanan
+ */
+
+@page {
+    size: A6 portrait;
+    margin: 0;
+    padding: 0;
+}
+
+@media print {
+    * {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        width: 105mm;
+        height: 148mm;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    /* Hide semua elemen kecuali yang untuk print */
+    body > *:not(#pb-force-print):not(style):not(script) {
+        display: none !important;
+    }
+
+    #pb-force-print {
+        display: block !important;
+        width: 105mm !important;
+        height: 148mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
+    }
+
+    #pb-force-print img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Remove header dan footer browser default */
+    @page {
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/* Print preview mode */
+.print-preview {
+    width: 105mm;
+    height: 148mm;
+    margin: 20px auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.print-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

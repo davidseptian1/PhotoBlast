@@ -147,4 +147,62 @@
     timer = setInterval(updateCountdown, 1000);
   });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof TutorialHelper === 'undefined') {
+        return;
+    }
+    
+    const tutorialHelper = new TutorialHelper();
+    
+    // Tunggu popup pembayaran berhasil hilang dulu
+    setTimeout(function() {
+        if (!tutorialHelper.hasSeenTutorial) {
+            tutorialHelper.showWelcomePopup('Halaman Email').then(showTutorial => {
+                if (showTutorial) {
+                    const steps = [
+                        {
+                            element: '#emailInput',
+                            popover: {
+                                title: '📧 Masukkan Email Anda',
+                                description: 'Ketik alamat email Anda di sini. Email ini akan digunakan untuk mengirim foto-foto Anda setelah selesai.',
+                                position: 'bottom'
+                            }
+                        },
+                        {
+                            element: '#saveEmailBtn',
+                            popover: {
+                                title: '✅ Klik Submit',
+                                description: 'Setelah mengisi email, klik tombol Submit untuk melanjutkan ke halaman pemilihan layout foto.',
+                                position: 'top'
+                            }
+                        },
+                        {
+                            popover: {
+                                title: '🎉 Siap Mulai!',
+                                description: 'Setelah submit, Anda akan diarahkan untuk memilih layout dan mulai mengambil foto. Selamat bersenang-senang!',
+                            }
+                        }
+                    ];
+                    
+                    tutorialHelper.startTour(steps);
+                } else {
+                    tutorialHelper.markTutorialAsSeen();
+                }
+            });
+        }
+
+        // Tombol replay tutorial
+        const replayBtn = document.createElement('button');
+        replayBtn.className = 'tutorial-replay-btn';
+        replayBtn.innerHTML = '❓ Lihat Tutorial Lagi';
+        replayBtn.onclick = function() {
+            tutorialHelper.resetTutorial();
+            location.reload();
+        };
+        document.body.appendChild(replayBtn);
+    }, 1000); // Tunggu 1 detik
+});
+</script>
 @endsection

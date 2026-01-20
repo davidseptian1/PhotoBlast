@@ -11,6 +11,8 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
-        "nodemailer": "^6.9.13"
+        "driver.js": "^1.4.0",
+        "nodemailer": "^6.9.13",
+        "sweetalert2": "^11.26.17"
     }
 }

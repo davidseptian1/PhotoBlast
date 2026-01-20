@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+    <link rel="stylesheet" href="/css/tutorial.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        #emailInput {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        #submitEmailBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #submitEmailBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>Test Tutorial System</h1>
+        <p>Halaman ini untuk test apakah tutorial berfungsi dengan baik.</p>
+        
+        <form>
+            <label for="emailInput">Email:</label>
+            <input type="email" id="emailInput" placeholder="nama@email.com" required>
+            
+            <button type="button" id="submitEmailBtn">Submit</button>
+        </form>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+            <h3>Console Log:</h3>
+            <div id="log" style="font-family: monospace; font-size: 12px;"></div>
+        </div>
+    </div>
+
+    <!-- Load Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/tutorial-helper.js"></script>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        function log(msg) {
+            console.log(msg);
+            logDiv.innerHTML += msg + '<br>';
+        }
+
+        log('Page loaded');
+        log('Driver.js loaded? ' + (typeof driver !== 'undefined'));
+        log('SweetAlert2 loaded? ' + (typeof Swal !== 'undefined'));
+        log('TutorialHelper loaded? ' + (typeof TutorialHelper !== 'undefined'));
+
+        if (typeof TutorialHelper !== 'undefined') {
+            log('Creating TutorialHelper instance...');
+            const tutorialHelper = new TutorialHelper();
+            log('TutorialHelper created!');
+            log('Has seen tutorial? ' + tutorialHelper.hasSeenTutorial);
+
+            if (!tutorialHelper.hasSeenTutorial) {
+                log('Showing welcome popup...');
+                setTimeout(function() {
+                    tutorialHelper.showWelcomePopup('Test Page').then(showTutorial => {
+                        log('User clicked: ' + (showTutorial ? 'Show Tutorial' : 'Skip'));
+                        if (showTutorial) {
+                            const steps = [
+                                {
+                                    element: '#emailInput',
+                                    popover: {
+                                        title: '📧 Email Input',
+                                        description: 'Masukkan email Anda di sini',
+                                        position: 'bottom'
+                                    }
+                                },
+                                {
+                                    element: '#submitEmailBtn',
+                                    popover: {
+                                        title: '✅ Submit Button',
+                                        description: 'Klik tombol ini untuk submit',
+                                        position: 'top'
+                                    }
+                                }
+                            ];
+                            tutorialHelper.startTour(steps);
+                        }
+                    });
+                }, 500);
+            } else {
+                log('Tutorial already seen. Click "Reset & Reload" to see it again.');
+            }
+        }
+
+        // Reset button
+        const resetBtn = document.createElement('button');
+        resetBtn.textContent = 'Reset & Reload Tutorial';
+        resetBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;';
+        resetBtn.onclick = function() {
+            localStorage.removeItem('photoblast_tutorial_seen');
+            location.reload();
+        };
+        document.body.appendChild(resetBtn);
+    </script>
+</body>
+</html>

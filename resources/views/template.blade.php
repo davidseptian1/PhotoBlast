@@ -329,6 +329,64 @@
           }
         });
       });
+
+      // Tutorial Implementation
+      setTimeout(function() {
+        const tutorialHelper = new TutorialHelper();
+        
+        if (!tutorialHelper.hasSeenTutorial) {
+          tutorialHelper.showWelcomePopup('Halaman Pilih Layout').then(showTutorial => {
+            if (showTutorial) {
+              const steps = [
+                {
+                  element: '.layout-grid',
+                  popover: {
+                    title: '📐 Pilih Layout Foto',
+                    description: 'Pilih berapa banyak foto yang ingin Anda ambil. Tersedia pilihan 2 foto, 4 foto (2x2), atau 6 foto. Pilih sesuai keinginan Anda!',
+                    position: 'top'
+                  }
+                },
+                {
+                  element: '.layout-option[data-layout="2"]',
+                  popover: {
+                    title: '📸 Layout 2 Foto',
+                    description: 'Klik di sini untuk memilih layout 2 foto. Cocok untuk foto berpasangan atau duo.',
+                    position: 'bottom'
+                  }
+                },
+                {
+                  element: '.js-preview-frames',
+                  popover: {
+                    title: '👁️ Preview Frame (Opsional)',
+                    description: 'Jika tersedia, Anda bisa klik tombol ini untuk melihat preview frame yang tersedia untuk layout ini.',
+                    position: 'top'
+                  }
+                },
+                {
+                  popover: {
+                    title: '✅ Siap Memilih!',
+                    description: 'Setelah memilih layout, Anda akan diarahkan ke halaman kamera untuk mulai mengambil foto. Selamat bersenang-senang! 🎉'
+                  }
+                }
+              ];
+              
+              tutorialHelper.startTour(steps);
+            } else {
+              tutorialHelper.markTutorialAsSeen();
+            }
+          });
+        }
+
+        // Tombol replay tutorial
+        const replayBtn = document.createElement('button');
+        replayBtn.className = 'tutorial-replay-btn';
+        replayBtn.innerHTML = '❓ Lihat Tutorial Lagi';
+        replayBtn.onclick = function() {
+          tutorialHelper.resetTutorial();
+          location.reload();
+        };
+        document.body.appendChild(replayBtn);
+      }, 500); // Delay 0.5 detik
     })();
   </script>
 </section>
