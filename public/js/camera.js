@@ -360,6 +360,7 @@ function capturePhotoAndSave() {
     async function afterCountDown() {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
+        const DPR = window.devicePixelRatio || 1;
 
         let bitmap = null;
         try {
@@ -371,18 +372,23 @@ function capturePhotoAndSave() {
             // Fit entire source into output (no cropping). Keep aspect ratio and cap width.
             const outW = Math.max(1, Math.min(MAX_OUTPUT_WIDTH, srcW));
             const outH = Math.max(1, Math.round((outW * srcH) / srcW));
-            canvas.width = outW;
-            canvas.height = outH;
+            // Size canvas for DPR to avoid blurry result on HiDPI displays
+            canvas.width = Math.round(outW * DPR);
+            canvas.height = Math.round(outH * DPR);
+            canvas.style.width = outW + 'px';
+            canvas.style.height = outH + 'px';
 
             ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(DPR, DPR);
             ctx.filter = FILTERS[currentFilterKey] || "none";
-            
-            // Apply mirror/flip if enabled
+
+            // Apply mirror/flip if enabled (operate in CSS-pixel space, scaling already applied)
             if (mirrorDisplay) {
                 ctx.translate(outW, 0);
                 ctx.scale(-1, 1);
             }
-            
+
             // draw the whole bitmap scaled to canvas so nothing is cropped
             ctx.drawImage(bitmap, 0, 0, srcW, srcH, 0, 0, outW, outH);
             ctx.filter = "none";
@@ -398,19 +404,25 @@ function capturePhotoAndSave() {
             // Fit entire video frame into output (no cropping). Keep aspect ratio and cap width.
             const outW = Math.max(1, Math.min(MAX_OUTPUT_WIDTH, videoWidth));
             const outH = Math.max(1, Math.round((outW * videoHeight) / videoWidth));
-            canvas.width = outW;
-            canvas.height = outH;
-            
+            // Size canvas for DPR to avoid blurry result on HiDPI displays
+            canvas.width = Math.round(outW * DPR);
+            canvas.height = Math.round(outH * DPR);
+            canvas.style.width = outW + 'px';
+            canvas.style.height = outH + 'px';
+
             ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(DPR, DPR);
             ctx.filter = FILTERS[currentFilterKey] || "none";
-            
+
             // Apply mirror/flip if enabled
             if (mirrorDisplay) {
                 ctx.translate(outW, 0);
                 ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, outW, outH);
+            } else {
+                ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, outW, outH);
             }
-            
-            ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, outW, outH);
             ctx.filter = "none";
             ctx.restore();
 
@@ -425,8 +437,9 @@ function capturePhotoAndSave() {
             }
         }
 
-        // Use JPEG for much smaller files at high resolution.
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        // Optionally force PNG for lossless test via localStorage key `pb_force_png` = '1'
+        const usePng = localStorage.getItem('pb_force_png') === '1';
+        const dataUrl = usePng ? canvas.toDataURL('image/png') : canvas.toDataURL("image/jpeg", 0.92);
         const base64Data = dataUrl.split(",")[1];
 
         listPhoto.innerHTML =

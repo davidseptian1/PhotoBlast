@@ -3,6 +3,8 @@
 const PRINT_DPI = 300;
 const A6_W_MM = 105;
 const A6_H_MM = 148;
+// Safe margin (in mm) to keep critical content away from printer non-printable edges
+const PRINT_SAFE_MM = 3; // 3mm safe area by default
 
 function mmToPx(mm, dpi) {
     return Math.round((mm / 25.4) * dpi);
@@ -569,7 +571,13 @@ function drawFrameOverlayWithHoles(ctx, frameImg, canvasWidth, canvasHeight, rec
     off.height = canvasHeight;
     const octx = off.getContext('2d');
     octx.clearRect(0, 0, canvasWidth, canvasHeight);
-    octx.drawImage(frameImg, 0, 0, canvasWidth, canvasHeight);
+    // Respect safe margin so important artwork isn't placed on printable edge
+    const safePx = Math.round((PRINT_SAFE_MM / 25.4) * PRINT_DPI);
+    const drawX = safePx;
+    const drawY = safePx;
+    const drawW = Math.max(1, canvasWidth - safePx * 2);
+    const drawH = Math.max(1, canvasHeight - safePx * 2);
+    octx.drawImage(frameImg, drawX, drawY, drawW, drawH);
 
     const bleed = Math.max(1, Math.round(Math.min(canvasWidth, canvasHeight) * 0.002));
     octx.save();
@@ -660,7 +668,13 @@ function drawFrameOverlayWithHoles(ctx, frameImg, canvasWidth, canvasHeight, rec
                 }
 
                 if (frameMode === 'background') {
-                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                    // Draw background respecting safe margin (keep critical areas inward)
+                    const safePx = Math.round((PRINT_SAFE_MM / 25.4) * PRINT_DPI);
+                    const dx = safePx;
+                    const dy = safePx;
+                    const dw = Math.max(1, canvas.width - safePx * 2);
+                    const dh = Math.max(1, canvas.height - safePx * 2);
+                    ctx.drawImage(frameImg, dx, dy, dw, dh);
                 }
             } catch (e) {
                 console.warn('Frame load failed', e);
@@ -731,7 +745,13 @@ function drawFrameOverlayWithHoles(ctx, frameImg, canvasWidth, canvasHeight, rec
         // Overlay frame (if transparent)
         if (hasFrame && frameImg) {
             if (frameMode === 'overlay') {
-                ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                // Draw overlay respecting safe margin
+                const safePx = Math.round((PRINT_SAFE_MM / 25.4) * PRINT_DPI);
+                const dx = safePx;
+                const dy = safePx;
+                const dw = Math.max(1, canvas.width - safePx * 2);
+                const dh = Math.max(1, canvas.height - safePx * 2);
+                ctx.drawImage(frameImg, dx, dy, dw, dh);
             }
             if (frameMode === 'holes' && Array.isArray(windowRects) && windowRects.length) {
                 drawFrameOverlayWithHoles(ctx, frameImg, canvas.width, canvas.height, windowRects);
